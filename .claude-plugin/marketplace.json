@@ -1,0 +1,22 @@
+{
+  "name": "cmp-marketplace",
+  "owner": {
+    "name": "LadderPicks"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for KMP Compose Multiplatform — scaffolding skills and quality agents",
+    "version": "2.9.0"
+  },
+  "plugins": [
+    {
+      "name": "cmp-scaffold",
+      "source": "./plugins/cmp-scaffold",
+      "description": "KMP architecture scaffolding skills for Compose Multiplatform apps"
+    },
+    {
+      "name": "cmp-quality",
+      "source": "./plugins/cmp-quality",
+      "description": "KMP architecture auditing and validation agents"
+    }
+  ]
+}
