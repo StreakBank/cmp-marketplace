@@ -1,11 +1,11 @@
 {
   "name": "cmp-marketplace",
   "owner": {
-    "name": "LadderPicks"
+    "name": "StreakBank"
   },
   "metadata": {
-    "description": "Claude Code plugins for KMP Compose Multiplatform — scaffolding skills and quality agents",
-    "version": "2.9.0"
+    "description": "Claude Code plugins for KMP Compose Multiplatform — scaffolding skills, quality agents, and the Claude Design → Compose bridge",
+    "version": "2.10.0"
   },
   "plugins": [
     {
@@ -17,6 +17,11 @@
       "name": "cmp-quality",
       "source": "./plugins/cmp-quality",
       "description": "KMP architecture auditing and validation agents"
+    },
+    {
+      "name": "cmp-design-bridge",
+      "source": "./plugins/cmp-design-bridge",
+      "description": "Claude Design → Compose bridge skills (design→Compose transform + cross-framework fidelity verdict); requires the cmp-design-bridge CLI from npm"
     }
   ]
 }
