@@ -40,8 +40,8 @@ Create `<module>/feature/src/commonMain/kotlin/{package_base_path}/<module>/feat
 
 Use templates from [code-templates.md](../../references/code-templates.md):
 - **UiState** — sealed interface with Loading + Success
-- **ViewModel** — `stateIn()` pattern, `errorEvents` SharedFlow
-- **Screen** — `koinViewModel()`, `collectAsStateWithLifecycle()`, SnackbarHost, exhaustive `when`. Use design tokens from [design-tokens.md](../../references/design-tokens.md) (no raw dp). Use string resources per [string-resources.md](../../references/string-resources.md) (no hardcoded strings). Provide `key` in `items()` calls for `LazyColumn`/`LazyVerticalGrid`.
+- **ViewModel** — `stateIn()` pattern, `messages: Flow<UiMessage>` one-shot `Channel` (see [code-templates.md](../../references/code-templates.md#uimessage-one-shot-severity-tagged-message) — not a `MutableSharedFlow<String>`)
+- **Screen** — `koinViewModel()`, `collectAsStateWithLifecycle()`, SnackbarHost consuming `messages`, exhaustive `when`. Use design tokens from [design-tokens.md](../../references/design-tokens.md) (no raw dp). Use string resources per [string-resources.md](../../references/string-resources.md) (no hardcoded strings). Provide `key` in `items()` calls for `LazyColumn`/`LazyVerticalGrid`.
 
 ### 6. Update Navigation
 

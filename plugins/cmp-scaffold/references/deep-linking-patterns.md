@@ -231,11 +231,13 @@ class <Feature>DetailViewModel(
                     if (item != null) emit(<Feature>DetailUiState.Success(item))
                     else emit(<Feature>DetailUiState.Error(message = "Not found"))
                 },
-                onFailure = { emit(<Feature>DetailUiState.Error(it.message ?: "Unknown error")) }
+                onFailure = { emit(<Feature>DetailUiState.Error(userMessageFor(it, "Couldn't load. Try again."))) }
             )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), <Feature>DetailUiState.Loading)
 }
 ```
+
+`userMessageFor` is the message-mapper seam from [code-templates.md](code-templates.md#message-mapper-seam) — it never returns `throwable.message` verbatim.
 
 ---
 

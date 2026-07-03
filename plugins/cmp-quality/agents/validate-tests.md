@@ -86,8 +86,8 @@ Read `composeApp/build.gradle.kts` → `namespace` → `{package_base}` (strip `
   - WARN: Only success path tested — missing failure/error scenario
 
 ### 3.6 Error Events Test
-- PASS: Tests verify `errorEvents` emission via Turbine when actions fail (`fakeRepository.shouldFail = true` → action → `errorEvents.test { assertEquals(message, awaitItem()) }`)
-- FAIL: ViewModel has `errorEvents` but no test verifies emission
+- PASS: Tests verify the one-shot message stream emits on action failure (`fakeRepository.shouldFail = true` → action → assert the expected mapped message was emitted). Turbine (`errorEvents.test { assertEquals(message, awaitItem()) }`) is RECOMMENDED for asserting `Flow`/`Channel`-based streams, but not required — any deterministic assertion of the emitted message (e.g. a single `awaitItem()`/`receive()` off the stream) satisfies this check.
+- FAIL: ViewModel has an error/message stream but no test verifies emission
 
 ### 3.7 No Hardcoded Delays
 - PASS: No `delay()`, `Thread.sleep()`, or `advanceTimeBy()` used outside of deliberate timing tests

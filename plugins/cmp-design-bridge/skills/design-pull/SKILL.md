@@ -17,9 +17,7 @@ assembly + verification (truncation check, runtime revision-pin, join-manifest
 generation) is the `cmp-design-bridge pull` CLI.
 
 **CLI:** the skill calls the standalone `cmp-design-bridge` command (the logic
-lives in the CLI, not here). Install once — from the plugin dir
-`npm install && npm link` (dev), or `npm i -g cmp-design-bridge` once published.
-Un-linked fallback: `node "$CLAUDE_PLUGIN_ROOT/bin/cmp-design-bridge.mjs"`.
+lives in the CLI, not here). Install: `npm i -g cmp-design-bridge`.
 
 ## Steps
 

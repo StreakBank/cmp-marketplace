@@ -47,7 +47,7 @@ Use templates from [test-patterns.md](../../references/test-patterns.md):
 
 ### 5. Create ViewModel Tests
 
-Use [test-patterns.md — ViewModel Test](../../references/test-patterns.md#viewmodel-test). Generate tests for: initial Loading state, Success with data, Empty (if applicable), each action method (success + failure), errorEvents emission on failure.
+Use [test-patterns.md — ViewModel Test](../../references/test-patterns.md#viewmodel-test). Generate tests for: initial Loading state, Success with data, Empty (if applicable), each action method (success + failure), `messages` Channel emission on failure.
 
 ### 6. Create Repository Tests
 
@@ -63,7 +63,7 @@ Before reporting, confirm each item — fix any violations:
 
 - [ ] Test dependencies added to each module's `sourceSets` block
 - [ ] Fake implementations use `MutableStateFlow` + helpers (not mock frameworks)
-- [ ] ViewModel tests cover: initial Loading, Success with data, each action (success + failure), errorEvents
+- [ ] ViewModel tests cover: initial Loading, Success with data, each action (success + failure), `messages` Channel emission
 - [ ] Repository tests cover: Flow emission, write operations, cache-first (if remote exists)
 - [ ] All test classes compile (no unresolved references)
 

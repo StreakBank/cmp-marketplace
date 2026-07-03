@@ -49,7 +49,7 @@ At least one `data class` in `data/api/model/`. All properties `val` (not `var`)
 Class in `data/impl/repository/` implementing repository interface. Constructor takes interface type (not concrete class).
 
 ### 2.5 Data DI Module
-Contains `singleOf(::InMemory*) bind *LocalDataSource::class` and `singleOf(::*RepositoryImpl) bind *Repository::class`.
+PASS: A `*LocalDataSource` binding to a concrete impl — `InMemory*`, `Room*`, or `Ktor*` (e.g. `singleOf(::InMemory*) bind *LocalDataSource::class` or `singleOf(::Room*) bind *LocalDataSource::class`) — plus a `*RepositoryImpl` binding (`singleOf(::*RepositoryImpl) bind *Repository::class`). Any of the sanctioned impls satisfies the `*LocalDataSource` half; do not FAIL a module solely for having migrated from `InMemory*` to `Room*`/`Ktor*` via `add-room-database`/`add-ktor-networking`.
 
 ### 2.6 Remote Data Source (if exists)
 Interface + Mock impl in same file. All ops return `Result<T>`.
@@ -73,15 +73,15 @@ Glob for `*Entity.kt` with `@Entity` in `data/impl/datasource/local/db/`. If fou
 
 ### 3.2 ViewModel
 - `val uiState: StateFlow<*> = ...stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ...Loading)`
-- `private val _errorEvents = MutableSharedFlow<String>()`
-- `val errorEvents: SharedFlow<String> = _errorEvents.asSharedFlow()`
+- Transient errors delivered via a one-shot typed message stream (e.g. `private val _messages = Channel<UiMessage>(Channel.BUFFERED)` + `val messages: Flow<UiMessage> = _messages.receiveAsFlow()`, or a non-replaying equivalent) — NOT a replay-prone `MutableSharedFlow<String>`
+- Raw exception text (`throwable.message`) is never surfaced directly — a `userMessageFor(throwable, default)` mapper produces the user-facing message
 - Constructor takes repository interface (not concrete class)
 - Does NOT use `collect()` in `init {}` to update MutableStateFlow
 
 ### 3.3 Screen Composable
 - `koinViewModel()` for injection
 - `collectAsStateWithLifecycle()` for state
-- `SnackbarHostState` + `LaunchedEffect` for `errorEvents`
+- A message host + `LaunchedEffect` (or equivalent) consuming the transient-message stream — the host is project-defined; Material `SnackbarHostState` or a custom host both satisfy this
 - Exhaustive `when` on all UiState variants
 - No raw dp literals (`\d+\.dp`) — must use `Spacing.*`, `IconSize.*`
 - No hardcoded user-facing strings — must use `stringResource(Res.string.xxx)`
@@ -103,20 +103,10 @@ All `Res` imports use `{resource_prefix}.<module>.feature.generated.resources.Re
 
 ## Phase 4: Cross-Module Wiring
 
-### 4.1 settings.gradle.kts
-All sub-modules registered: `:<module>:data:api`, `:<module>:data:impl`, `:<module>:feature` (+ `:domain`, `:common:ui` if they exist).
+For cross-module dependency direction (feature → data:api / feature → domain, circular deps), module registration completeness (settings.gradle.kts, AppModule.kt, composeApp build deps), and build dependency correctness, run the dedicated `dependency-audit` agent — it is the single source of truth for these checks. This module validation focuses on the module's own file structure and layer patterns (Phases 1-3).
 
-### 4.2 AppModule.kt
-`<module>DataModule` and `<module>FeatureModule` in `includes(...)`.
-
-### 4.3 composeApp Dependencies
-`implementation(project(":<module>:data:api"))`, `...data:impl`, `...feature` in `composeApp/build.gradle.kts`.
-
-### 4.4 Build Dependency Direction
-Feature's build.gradle.kts MUST have `project(":core:feature")` and `project(":<module>:data:api")`. MUST NOT have `project(":<module>:data:impl")`.
-
-### 4.5 Navigation Wiring (Info Only)
-Check if `*Graph()` call exists in `{nav_host_path}` and if there's a `TopLevelDestination` entry. Report as INFO.
+### 4.1 Navigation Wiring (Info Only)
+Check if `*Graph()` call exists in `{nav_host_path}` and if there's a `TopLevelDestination` entry. Report as INFO. (Not covered by `dependency-audit` — this is the one cross-module check unique to module validation.)
 
 ## Check Classification
 

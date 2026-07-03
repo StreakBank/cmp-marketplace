@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.11.0 — 2026-07-03
+
+### Fixed — client-error pattern (generic correctness)
+- **`cmp-scaffold`** — generated ViewModels/Screens now emit a one-shot `Channel<UiMessage>(BUFFERED).receiveAsFlow()` message stream + a `userMessageFor(throwable, default)` mapper seam, replacing `errorEvents: MutableSharedFlow<String>` (which replays on config change and mixes success/error/empty strings) and raw `throwable.message` piped to the UI (which leaks technical text / URLs). A neutral Material `SnackbarHost` remains the default host — projects can swap it. New `UiMessage` type + `userMessageFor` seam documented in `code-templates.md`; updates threaded through `data-patterns.md`, `analytics-patterns.md`, `deep-linking-patterns.md`, `test-patterns.md`, and the `scaffold-feature`/`add-screen`/`scaffold-tests`/`add-analytics`/`polish-ui` skills.
+- **`cmp-quality`** — `audit-architecture` Check 7, `review-changes`, `validate-module`, `validate-tests` now enforce that generic contract (one-shot typed message stream + `userMessageFor`; no raw `throwable.message`) instead of hard-requiring `MutableSharedFlow<String>` + a *Material* host. The message host is now project-defined — a custom host satisfies the check.
+
+### Fixed — cmp-quality internal contradictions
+- **`validate-module`** §2.5 — DI check accepts `InMemory*`, `Room*`, or `Ktor*` as the `*LocalDataSource` binding (was hard-coded to `InMemory*`, false-failing modules migrated via `add-room-database`/`add-ktor-networking`).
+- **`validate-module`** / **`dependency-audit`** — the `feature → data:api` direction is now domain-layer-aware and stated once: when a `domain` module exists the feature depends on `domain` (per `add-domain-layer`) and the direct `data:api` edge is optional; `dependency-audit` Check 8 supersedes Check 1 in that case. Resolves the Check 1↔8 contradiction and the `:core:feature` severity mismatch.
+- **`validate-module`** Phase 4 — defers cross-module dependency/registration checks to `dependency-audit` (single source of truth) instead of duplicating them, mirroring `audit-architecture`.
+
+### Fixed — cmp-design-bridge decoupling + staleness
+- Removed project-coupling leaks from the (generic) skill bodies: `design-transform` no longer names StreakBank/Roborazzi/`recordRoborazziDebug`/`compose-canvas-dp.md` (now neutral `<project screenshot tool>` / `<gate-record command>` placeholders); `design-push` no longer names the retired `streakbank-ux` repo or a project memory file.
+- Removed the dead `$CLAUDE_PLUGIN_ROOT/bin/*.mjs` fallback + in-plugin `npm link` from `design-pull`/`design-fidelity`/`design-transform` (the CLI is the published `cmp-design-bridge` npm package); install is now just `npm i -g cmp-design-bridge`.
+- Added a `design-transform` ↔ `polish-ui` visual-authority boundary note (don't run both on one screen; `design-transform` owns screens with an authoritative design frame).
+
+### Added — mechanized discipline (governance)
+- **`scripts/check-coupling.sh`** — the coupling/manifest admission gate (ported + adapted from agent-marketplace): scans `skills/` **and** `agents/` for project-name / absolute-path / named-rule leaks, with carve-outs for the org name in repo-address lines + `author`/`owner` JSON and for the `cmp-design-bridge` npm install address. Shellcheck-clean.
+- **`.github/workflows/ci.yml`** — CI admission gate: coupling check + shellcheck + JSON-manifest validation on every push/PR.
+- **`CONTRIBUTING.md`** — the generic-core-only contribution discipline for this marketplace's three plugins.
+- **`plugins/cmp-scaffold/PROVENANCE.md`** — declares the `references/` content authored-original (nothing vendored), satisfying the gate's provenance check honestly.
+
+### Changed
+- Plugin versions: `cmp-scaffold` 2.9.0 → 2.10.0, `cmp-quality` 2.9.0 → 2.10.0, `cmp-design-bridge` 0.1.0 → 0.2.0. Marketplace 2.10.0 → 2.11.0.
+
+## 2.10.0 — 2026-06-30
+
+### Added
+- **`cmp-design-bridge`** plugin (v0.1.0) — thin skills wrapping the published `cmp-design-bridge` npm CLI: `design-pull`, `design-transform`, `design-fidelity` (steady-state Claude Design → Compose loop) + the gated `design-push` (one-time port INTO Claude Design). (This entry backfills the marketplace 2.10.0 bump, which shipped the plugin at commit `1a4d907` without a CHANGELOG line.)
+
 ## 2.9.0 — 2026-02-09
 
 ### Fixed

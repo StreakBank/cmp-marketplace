@@ -133,6 +133,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlin.test.*
+import {package_base}.core.feature.ui.UiMessage
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class <Feature>ViewModelTest {
@@ -171,12 +172,28 @@ class <Feature>ViewModelTest {
         }
     }
 
+    @Test
+    fun `action sends error message on failure`() = runTest {
+        // Substitute the ViewModel's actual failing action (e.g. `refresh()`, `add(item)`) —
+        // `refresh()` here is illustrative, matching the "Local + Remote" refresh action
+        // from data-patterns.md.
+        fakeRepository.shouldFail = true
+        viewModel.messages.test {
+            viewModel.refresh()
+            val message = awaitItem()
+            assertEquals(UiMessage.Severity.ERROR, message.severity)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     // Generate tests for each ViewModel action method:
     // - Success case
-    // - Failure case (verify errorEvents emission)
+    // - Failure case (verify `messages` Channel emission — assert severity, not exact text)
     // - State transitions
 }
 ```
+
+`viewModel.messages` is a `Flow<UiMessage>` backed by a `Channel` (see [code-templates.md](code-templates.md#uimessage-one-shot-severity-tagged-message)) — Turbine's `.test { }` collects it the same way as any other `Flow`. Assert on `message.severity` and, if needed, that `message.text` is the friendly copy passed as `userMessageFor`'s `default` — never assert against a raw exception message, since the mapper seam guarantees one is never surfaced.
 
 > **`WhileSubscribed` timing caveat:** When the ViewModel uses `SharingStarted.WhileSubscribed(5_000)`, the `stateIn` flow only starts collecting when a subscriber is present. In tests, always await state transitions (e.g., `awaitItem()` for Loading, then `awaitItem()` for Success) **inside** the Turbine `test {}` block — not before it. Setting up fake data before calling `viewModel.uiState.test {}` ensures the data is ready when the subscription starts, but you must still await the Loading→Success transition within the block.
 
@@ -187,7 +204,7 @@ Generate a test for:
 - `Success` state with data
 - `Empty` state (if UiState has an Empty variant)
 - Each action method — success path
-- Each action method — failure path (verify `errorEvents` emission via Turbine)
+- Each action method — failure path (verify `messages` Channel emission via Turbine)
 
 ---
 

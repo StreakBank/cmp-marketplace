@@ -13,6 +13,8 @@ allowed-tools:
 
 # Polish Feature UI
 
+> **Don't stack this with `cmp-design-bridge`'s `design-transform`.** The two skills hold opposite theories of visual authority: `polish-ui` *invents* visual treatment from recipes, `design-transform` *reproduces* an already-authored design frame. Never run both on the same screen. When a design frame (e.g. a pulled Claude Design canvas frame) is the source of truth for a screen, `design-transform` owns that screen's visuals — skip `polish-ui` for it, and reserve `polish-ui` for screens with no authoritative design frame.
+
 Upgrade a feature's UI from structurally correct to visually polished. Architecture-preserving — only touches Screen composables, string resources, and design system utilities. **Never modifies ViewModel, Repository, DI, or Navigation.**
 
 **What "polish" means:** This skill must produce visible, dramatic visual improvements. If the UI looks the same after running polish-ui, the skill has failed. At minimum, every run must: rewrite item composables with richer card compositions, add list entry animations, add interactive micro-interactions, and establish typographic hierarchy. The mechanical upgrades (shimmer, AnimatedContent, PullToRefreshBox) are necessary but insufficient.

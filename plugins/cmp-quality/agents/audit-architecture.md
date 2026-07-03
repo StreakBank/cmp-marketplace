@@ -64,7 +64,8 @@ Glob for `**/di/AppModule.kt` under `composeApp/` → `{app_module_path}`.
 
 ### Check 7: Error Events Pattern
 - **Files:** `*/feature/*ViewModel.kt`
-- PASS: `_errorEvents = MutableSharedFlow<String>()` + `errorEvents: SharedFlow<String>`
+- PASS: Transient errors delivered via a one-shot typed message stream (`Channel<UiMessage>(BUFFERED).receiveAsFlow()`, or a non-replaying equivalent) + a `userMessageFor(throwable, default)` mapper so raw exception text never reaches the UI
+- FAIL: Raw `throwable.message` surfaced to the UI, OR a replay-prone `MutableSharedFlow<String>` used for one-shot user messages
 - FAIL: Only uses `UiState.Error` for action failures
 - N/A: ViewModel has no actions that can fail
 

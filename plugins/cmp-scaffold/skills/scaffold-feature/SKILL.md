@@ -43,8 +43,8 @@ Create model, repository interface, local data source, repository implementation
 
 Create UiState, ViewModel, Screen, Navigation, and DI module using templates from [code-templates.md](../../references/code-templates.md). Key rules:
 - UiState: `sealed interface` (NOT sealed class)
-- ViewModel: `stateIn()` pattern (NOT collect in init), `errorEvents` SharedFlow
-- Screen: `koinViewModel()`, `collectAsStateWithLifecycle()`, SnackbarHost for errors
+- ViewModel: `stateIn()` pattern (NOT collect in init), `messages: Flow<UiMessage>` one-shot `Channel` (NOT a `MutableSharedFlow<String>` — see [code-templates.md](../../references/code-templates.md#uimessage-one-shot-severity-tagged-message))
+- Screen: `koinViewModel()`, `collectAsStateWithLifecycle()`, SnackbarHost consuming `messages`
 - Screen: use design tokens from [design-tokens.md](../../references/design-tokens.md) — no raw dp values
 - Screen: provide `key` parameter in `LazyColumn`/`LazyVerticalGrid` `items()` calls (e.g., `items(data, key = { it.id })`)
 - Navigation: `@Serializable` type-safe routes (Nav 2.x)

@@ -24,9 +24,9 @@ Glob for `**/di/AppModule.kt` under `composeApp/` → `{app_module_path}`. Read 
 
 ### Check 1: Feature → Data Layer Direction
 - **Files:** Each `*/feature/build.gradle.kts`
-- PASS: Depends on `:<module>:data:api` only
-- FAIL: Contains `project(":<module>:data:impl")` — implementation leak
-- WARN: Missing `:<module>:data:api` dependency
+- PASS: Depends on `:<module>:data:api` directly — for modules with **no** domain layer. If `:<module>:domain` exists, the direct `feature → data:api` edge is optional/removed; see Check 8, which supersedes this check in that case.
+- FAIL: Contains `project(":<module>:data:impl")` — implementation leak (always a violation, domain or not)
+- WARN: Missing `:<module>:data:api` dependency AND no `:<module>:domain` dependency either — the feature has no path to its data layer at all
 
 ### Check 2: Data Impl → Data API Direction
 - **Files:** Each `*/data/impl/build.gradle.kts`
@@ -64,9 +64,11 @@ Glob for `**/di/AppModule.kt` under `composeApp/` → `{app_module_path}`. Read 
 - WARN: Missing `:core:feature` dependency (may lack design tokens/shared components)
 
 ### Check 8: Domain Module Wiring (if exists)
-- **Files:** `*/domain/build.gradle.kts`
-- PASS: Domain depends on `data/api` (not `data/impl`), feature depends on domain
+- **Files:** `*/domain/build.gradle.kts`, each `*/feature/build.gradle.kts`
+- **Supersedes Check 1 when a domain module exists:** once `<module>/domain/` exists, the feature MUST depend on `project(":<module>:domain")` instead of `data:api` directly — `add-domain-layer` intentionally moves the feature's dependency edge from data:api to domain. Do not FAIL a feature module under Check 1 for lacking a direct `data:api` dependency when it depends on `domain` instead.
+- PASS: Domain depends on `data/api` (not `data/impl`); feature depends on `domain`
 - FAIL: Domain depends on `data/impl`, or feature doesn't depend on domain
+- N/A: No domain module for this feature — Check 1's `feature → data:api` rule applies instead
 
 ### Check 9: Cross-Module Dependencies
 - **Files:** Each `*/feature/build.gradle.kts`

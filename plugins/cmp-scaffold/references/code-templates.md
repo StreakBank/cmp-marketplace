@@ -202,6 +202,55 @@ sealed interface <Feature>UiState {
 }
 ```
 
+`Error.message` must already be user-safe display text — populate it via `userMessageFor()` below, never via `throwable.message` directly (see Message Mapper Seam).
+
+---
+
+## UiMessage (One-Shot Severity-Tagged Message)
+
+Distinct from `<Feature>UiState.Error` above: `UiState.Error` is **persistent** render state for a failed screen (survives recomposition, drives the `when` branch); `UiMessage` is a **transient** one-shot signal (a snackbar/toast) that fires once and is never replayed on rotation. Define `UiMessage` once in a shared core module — every feature's ViewModel reuses the same type instead of inventing its own error-string stream.
+
+```kotlin
+package {package_base}.core.feature.ui
+
+data class UiMessage(
+    val severity: Severity,
+    val text: String,
+) {
+    enum class Severity { INFO, SUCCESS, WARNING, ERROR }
+
+    companion object {
+        fun info(text: String) = UiMessage(Severity.INFO, text)
+        fun success(text: String) = UiMessage(Severity.SUCCESS, text)
+        fun warning(text: String) = UiMessage(Severity.WARNING, text)
+        fun error(text: String) = UiMessage(Severity.ERROR, text)
+    }
+}
+```
+
+### Message Mapper Seam
+
+The **only** place a raw `Throwable` is allowed to influence user-facing text. Every ViewModel call site passes a `default` string alongside the caught throwable; `userMessageFor` maps known transient-failure shapes (connectivity, timeout, serialization) to friendly copy and falls back to `default` for everything else. It must **never** return `throwable.message` — that's internal/library text, not copy written for users. Log or report the raw `throwable` separately (crash reporter, `Logger.e(throwable)`, `AnalyticsService.logError` from [analytics-patterns.md](analytics-patterns.md)); only the mapped string here reaches the UI.
+
+```kotlin
+package {package_base}.core.feature.ui
+
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import kotlinx.io.IOException
+import kotlinx.serialization.SerializationException
+
+fun userMessageFor(throwable: Throwable, default: String): String = when (throwable) {
+    is IOException -> "No internet connection. Check your network and try again."
+    is HttpRequestTimeoutException -> "That took too long. Try again."
+    is SerializationException -> "Something went wrong loading that. Try again."
+    else -> default
+}
+```
+
+> The imports above assume a Ktor-based data layer ([networking-patterns.md](networking-patterns.md)). For local-only or non-Ktor features, adapt the `when` branches to whatever transient-failure exception types your data sources actually throw. The seam is what's generic — map known shapes to friendly copy, else `default`, never `throwable.message` — not the specific exception classes.
+
+Place both `UiMessage` and `userMessageFor` in `core/feature/ui/`, alongside `EmptyStateView` / `ErrorStateView` — every feature already imports from that module.
+
 ---
 
 ## ViewModel
@@ -211,21 +260,27 @@ package {package_base}.<feature>.feature
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.receiveAsFlow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import {package_base}.core.feature.ui.UiMessage
+import {package_base}.core.feature.ui.userMessageFor
 
 class <Feature>ViewModel(
     private val repository: <Feature>Repository
 ) : ViewModel() {
-    private val _errorEvents = MutableSharedFlow<String>()
-    val errorEvents: SharedFlow<String> = _errorEvents.asSharedFlow()
+    private val _messages = Channel<UiMessage>(Channel.BUFFERED)
+    val messages: Flow<UiMessage> = _messages.receiveAsFlow()
 
     val uiState: StateFlow<<Feature>UiState> = repository.get<Feature>s()
         .map { data -> <Feature>UiState.Success(data) as <Feature>UiState }
-        .catch { emit(<Feature>UiState.Error(it.message ?: "Unknown error")) }
+        .catch { emit(<Feature>UiState.Error(userMessageFor(it, "Couldn't load. Try again."))) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), <Feature>UiState.Loading)
 }
 ```
+
+`Channel(Channel.BUFFERED)` + `receiveAsFlow()` — NOT `MutableSharedFlow<String>` — is the required shape for one-shot UI messages: a `SharedFlow` replays to every new subscriber (a snackbar re-shows itself after a configuration change) and carries a bare `String`, mixing success/error/empty copy with no severity. A `Channel` delivers each message to exactly one collector, exactly once.
 
 ---
 
@@ -237,7 +292,8 @@ package {package_base}.<feature>.feature
 // Key requirements:
 // - koinViewModel() for ViewModel injection
 // - collectAsStateWithLifecycle() for state
-// - SnackbarHostState + LaunchedEffect for errorEvents
+// - SnackbarHostState + LaunchedEffect consuming `messages` (Material 3 SnackbarHost is
+//   the neutral default host; branch on UiMessage.severity for duration/styling)
 // - when expression handling all UiState variants
 // - Spacing.* / IconSize.* for sizing (no raw dp)
 // - stringResource(Res.string.xxx) for text (no hardcoded strings)

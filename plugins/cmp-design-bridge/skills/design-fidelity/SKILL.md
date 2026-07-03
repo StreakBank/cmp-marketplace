@@ -16,9 +16,8 @@ montage, run the mechanical gates) is the `cmp-design-bridge verify` CLI. The
 GRADE itself — "do these two engine-different renders depict the same screen at
 acceptable fidelity?" — is the irreducibly model-driven leg, and YOU do it.
 
-**CLI:** the skill calls the standalone `cmp-design-bridge` command (install once:
-from the plugin dir `npm install && npm link`, or `npm i -g cmp-design-bridge`
-when published; un-linked fallback `node "$CLAUDE_PLUGIN_ROOT/bin/cmp-design-bridge.mjs"`).
+**CLI:** the skill calls the standalone `cmp-design-bridge` command (install:
+`npm i -g cmp-design-bridge`).
 
 ## Steps
 

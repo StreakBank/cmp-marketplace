@@ -40,7 +40,8 @@ For each file, run `git diff <filepath>` (or `git diff --cached <filepath>` for 
 ### ViewModel Files
 - [ ] `uiState` uses `stateIn()` — NOT `collect()` in `init {}`
 - [ ] UiState is `sealed interface` — NOT `sealed class`
-- [ ] Has `_errorEvents = MutableSharedFlow<String>()` for transient errors
+- [ ] Transient errors delivered via a one-shot typed message stream (e.g. `Channel<UiMessage>(BUFFERED).receiveAsFlow()`, or a non-replaying equivalent) — NOT a replay-prone `MutableSharedFlow<String>`
+- [ ] No raw `throwable.message` in user-facing strings — a message mapper (`userMessageFor(throwable, default)`) is used
 - [ ] Explicit cast in `map`/`combine`/`catch` chains: `as <UiState>Type`
 
 ### Composable/UI Files
@@ -49,7 +50,7 @@ For each file, run `git diff <filepath>` (or `git diff --cached <filepath>` for 
 - [ ] No hardcoded user-facing strings — use `stringResource(Res.string.xxx)`
 - [ ] String resource imports use `{resource_prefix}.<module>` prefix (not directory-name-based)
 - [ ] Empty/error states use `EmptyStateView`/`ErrorStateView` from `core/feature/ui/`
-- [ ] Screens with error-prone actions have `SnackbarHost` + `LaunchedEffect` for `errorEvents`
+- [ ] Screens with error-prone actions consume the transient-message stream via a message host + `LaunchedEffect` (or equivalent) — the host is project-defined; Material `SnackbarHost` or a custom host both satisfy this
 - [ ] `Icon`/`IconButton`/`Image`/`AsyncImage` have `contentDescription` (or explicit `null` for decorative)
 - [ ] No hardcoded `contentDescription` strings — use `stringResource()`
 - [ ] Clickable elements have >= 48dp touch target (use `IconButton` or `Modifier.sizeIn`)

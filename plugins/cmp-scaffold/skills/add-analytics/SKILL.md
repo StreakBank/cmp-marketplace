@@ -76,7 +76,7 @@ Grep for `@Composable` screen functions in feature modules. Add `TrackScreen("<f
 
 ### 14. Wire Error Tracking into ViewModels
 
-Grep for `_errorEvents.emit` or `onFailure` patterns in existing ViewModels. Where found, add `analytics.logError()` calls before the error emission. Add `AnalyticsService` as a constructor parameter to those ViewModels and update their Koin bindings.
+Grep for `_messages.trySend` or `onFailure` patterns in existing ViewModels. Where found, add `analytics.logError()` calls before the error message is sent — the raw throwable goes to `analytics.logError()` only, never into the `UiMessage` text itself (see [code-templates.md](../../references/code-templates.md#message-mapper-seam)). Add `AnalyticsService` as a constructor parameter to those ViewModels and update their Koin bindings.
 
 ### 15. Verify
 

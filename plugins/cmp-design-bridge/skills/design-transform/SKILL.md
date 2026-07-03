@@ -19,9 +19,8 @@ deterministic generator produces a bad transpiler. So the CLI prepares the
 inputs (the rendered frame, the source JSX, the conventions, the token maps) and
 YOU author the Compose.
 
-**CLI:** the skill calls the standalone `cmp-design-bridge` command (install once:
-from the plugin dir `npm install && npm link`, or `npm i -g cmp-design-bridge`
-when published; un-linked fallback `node "$CLAUDE_PLUGIN_ROOT/bin/cmp-design-bridge.mjs"`).
+**CLI:** the skill calls the standalone `cmp-design-bridge` command (install:
+`npm i -g cmp-design-bridge`).
 
 ## Steps
 
@@ -44,17 +43,22 @@ when published; un-linked fallback `node "$CLAUDE_PLUGIN_ROOT/bin/cmp-design-bri
    navigation, and UiState shape match hand-written code. Map tokens per
    `conventions.md` (px→dp 1:1, 600→SemiBold, accepted deviations → the CMP value).
 
-4. **Emit a stub self-regression screenshot test** for the new state so the
-   Tier-2 gate has a baseline to record (the project's screenshot tool — in
-   StreakBank a Roborazzi `captureRoboImage("screenshots/<stateId>.png")` wrapped
-   in the test `ScreenshotScaffold`). The capture basename MUST equal the
-   `<stateId>` (the §9.1 derived-capture rule).
+4. **Emit a self-regression screenshot stub** for the new state via
+   <the project's screenshot/self-regression tool> so the Tier-2 gate has a
+   baseline to record. The capture basename MUST equal the `<stateId>` (the
+   §9.1 derived-capture rule).
 
 5. **Verify** with `/design-fidelity <stateId>` (advisory) and record the Tier-2
-   baseline via the project's gate-record command (in StreakBank
-   `./gradlew :<module>:feature:recordRoborazziDebug`) — the deterministic gate.
+   baseline via <the project's gate-record command> — the deterministic gate.
 
 ## Honest ceiling
 SVG→DrawScope charts (sparklines, distribution viz) are the least-automatable
 part — vision can tolerate but not *verify* their internals. Author these by
-hand against `compose-canvas-dp.md`.
+hand against the project's canvas-dp rules (numeric Canvas dimensions must be
+dp/sp converted, never raw px).
+
+## Visual authority boundary
+`design-transform` and the `cmp-scaffold` `polish-ui` skill hold opposite
+theories of visual authority — do NOT run both on the same screen. When a
+Claude Design canvas frame is the source of truth for a screen, `design-transform`
+owns its visuals end-to-end; skip `polish-ui` for that screen entirely.

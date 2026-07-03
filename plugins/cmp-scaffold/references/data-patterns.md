@@ -104,10 +104,12 @@ init { refresh() }
 fun refresh() {
     viewModelScope.launch {
         repository.refresh<Feature>s()
-            .onFailure { _errorEvents.emit(it.message ?: "Failed to refresh") }
+            .onFailure { _messages.trySend(UiMessage.error(userMessageFor(it, "Couldn't refresh. Try again."))) }
     }
 }
 ```
+
+`_messages` / `UiMessage` / `userMessageFor` are the `Channel<UiMessage>` + message-mapper seam from [code-templates.md](code-templates.md#uimessage-one-shot-severity-tagged-message) — never re-emit `it.message` directly.
 
 ### Offline UX Guidance
 

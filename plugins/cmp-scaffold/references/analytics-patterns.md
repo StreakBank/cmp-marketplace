@@ -139,15 +139,15 @@ Usage: `TrackScreen("orders_list")` at the top of every screen composable.
 
 ## Error Tracking Integration
 
-Wire analytics into the existing `errorEvents` SharedFlow pattern. Add `AnalyticsService` as a ViewModel constructor parameter:
+Wire analytics into the existing `messages` Channel pattern (see [code-templates.md](code-templates.md#uimessage-one-shot-severity-tagged-message)). Add `AnalyticsService` as a ViewModel constructor parameter:
 
 ```kotlin
 fun refresh() {
     viewModelScope.launch {
         repository.refresh<Feature>s()
             .onFailure { error ->
-                analytics.logError(error)
-                _errorEvents.emit(error.message ?: "Failed to refresh")
+                analytics.logError(error) // raw throwable → crash reporter only, never the UI
+                _messages.trySend(UiMessage.error(userMessageFor(error, "Couldn't refresh. Try again.")))
             }
     }
 }

@@ -20,17 +20,16 @@ and explicitly NOT part of the reusable verify framework.
 ## Hard preconditions (do not skip)
 1. **`get_claude_design_prompt` FIRST** — the authoring-model spec; call it once
    before any `write_files`.
-2. **Backup gate** — if the source repo has no durable remote (e.g. streakbank-ux:
-   0 remotes + untracked WIP), `git bundle` it BEFORE any destructive step.
+2. **Backup gate** — if the source repo has no durable remote (0 remotes +
+   untracked WIP), `git bundle` it BEFORE any destructive step.
 3. **finalize_plan IS the permission boundary** — cj stays in the loop on every
    write. Never auto-approve.
 
 ## Steps (per the native /design-sync upload sequence)
 1. `get_claude_design_prompt` → read the authoring spec.
-2. Stage the per-state frames locally (the per-state-frame recipe — see
-   `feedback-claude-design-per-state-frame-authoring.md`): thin `<stateId>.html`
-   + shared `_<module>-screen.jsx` + `_<module>-data.jsx`, each stamped
-   `<meta name="sb-state-id">`.
+2. Stage the per-state frames locally (the per-state-frame authoring recipe):
+   thin `<stateId>.html` + shared `_<module>-screen.jsx` + `_<module>-data.jsx`,
+   each stamped `<meta name="sb-state-id">`.
 3. LOCAL render-check first (`cmp-design-bridge render`), then `finalize_plan`
    → `write_files` (≤256 files/call; base64 for JSX with quotes/glyphs).
    **Always check the returned `"written":N` == file count.**
