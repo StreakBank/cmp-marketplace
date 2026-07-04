@@ -1,0 +1,6 @@
+{
+  "name": "cmp-arch-gates",
+  "description": "Deterministic architecture gates for KMP / Compose Multiplatform — a layered-module-DAG + boundary/visibility linter for CI or local runs. Requires the cmp-arch-gates CLI: `npm i -g cmp-arch-gates`. Use when wiring architecture enforcement into CI, checking module-graph layering, or configuring the gates for a KMP repo.",
+  "version": "0.1.0",
+  "author": { "name": "StreakBank" }
+}

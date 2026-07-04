@@ -1,5 +1,33 @@
 # Changelog
 
+## 2.12.0 — 2026-07-03
+
+### Added — `cmp-arch-gates` plugin (new)
+- **`cmp-arch-gates`** — a thin skill wrapping the new `cmp-arch-gates` CLI (npm):
+  deterministic architecture gates for KMP / Compose Multiplatform — a
+  layered-module-DAG + boundary/visibility linter for CI or local runs. Five gates
+  (`module-direction`, `implementation-only-modules`, `data-api-purity`,
+  `datasource-visibility`, `cross-owner-dataapi`), each a pure `run(root, config)`
+  module in the CLI; all project facts live in the consuming repo's
+  `.arch-gates/config.json` (transport modules, cross-owner allowlist, banned
+  imports, doc pointer) — the plugin and CLI hardcode none. Ships `SHIM-TEMPLATE.md`
+  for the consumer's path-keyed `.claude/rules/` pointer, and the CLI's
+  `init --detect` scaffolds + reports candidate facts for a new repo (never
+  auto-allowlisting existing edges). Extracted from the streakbank-cmp Wave-0
+  architecture-CI bash suite and generalized behind the config seam; validated
+  bash-parity green on the origin repo. `check-coupling.sh` passes.
+
+### Fixed — coupling admission gate
+- **`scripts/check-coupling.sh`** — the project-name grep is now case-INSENSITIVE
+  (`grep -IniE`), so a mixed-case brand name in prose (`StreakBank`, `LadderPicks`) is
+  caught, not just the lowercase spelling. Attribution/schema URLs are exempted by
+  blanking only the URL TOKEN (any `scheme://` URL + bare `github.com` /
+  `raw.githubusercontent.com` hosts, case-folded) before the grep — so a plugin's own
+  repo/schema URL may name the org while coupling PROSE sharing that line is still
+  caught, and a capitalized `GitHub.com` attribution URL no longer spuriously fails.
+  (The same case-sensitivity gap exists in agent-marketplace's copy — a separate
+  follow-up.)
+
 ## 2.11.0 — 2026-07-03
 
 ### Fixed — client-error pattern (generic correctness)
