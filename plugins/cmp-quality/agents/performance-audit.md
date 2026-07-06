@@ -1,6 +1,6 @@
 ---
 name: performance-audit
-description: Audit composable performance patterns including strong skipping, reference stability, AnimatedContent contentKey, and lazy list keys. Use when asked to check performance, audit recomposition, or optimize composables.
+description: Audit composable performance patterns — strong-skipping stability grounded in the Compose compiler report, reference stability in combine chains, per-frame composition reads, AnimatedContent contentKey, and lazy list keys. Use when asked to check performance, audit recomposition, or optimize composables.
 tools:
   - Read
   - Glob
@@ -24,32 +24,71 @@ Glob for:
 - `**/feature/src/commonMain/kotlin/**/*Card.kt`, `**/*Item.kt`, `**/*Row.kt` — item composables
 - `**/designsystem/**/*.kt` — design system utilities
 
+## Step 1.5: Ground stability findings in the Compose compiler report
+
+Checks 1–3 are the **stability class** and MUST be grounded in the compiler's own report — never in source-reading alone. Strong-skipping stability is a compiler-inferred property; you cannot reliably eyeball it. Read the report before reporting ANY Check 1–3 finding.
+
+- **Enable the reports.** In the module applying the Compose compiler plugin, set `metricsDestination` and `reportsDestination` (gate the wiring behind a project property so it's off by default):
+  ```kotlin
+  composeCompiler {
+      metricsDestination = layout.buildDirectory.dir("compose_compiler")
+      reportsDestination = layout.buildDirectory.dir("compose_compiler")
+  }
+  ```
+  Output per module: `build/compose_compiler/*-composables.txt` (per-composable param stability) and `*-classes.txt` (per-class inference).
+- **Regeneration caveat (verify empirically).** The metrics options do **not** invalidate up-to-date compile tasks — a warm build emits reports only for modules that happened to recompile. Force generation with `--rerun-tasks` on the compile task: `./gradlew :<module>:compileDebugKotlinAndroid --rerun-tasks -P<reports-flag>`.
+- **Read it under strong skipping.** Skippability is no longer the discriminator — every restartable composable is `restartable skippable`. The signal is **unstable params** (reference-compared): the report marks each param `stable`/`unstable` and each class `stable`/`unstable`/`runtime`.
+
+## The strong-skipping stability calculus (Kotlin ≥ 2.0.20)
+
+Strong skipping is default since Kotlin 2.0.20. It rewrites the rules Checks 1–3 enforce:
+
+- **All restartable composables are skippable** — the classic "restartable but not skippable" category the old checks hunted for is gone.
+- **Unstable params compare by REFERENCE (`===`); stable params compare by `.equals()`.** An unstable param does NOT force recomposition — the composable still skips whenever the caller passes a referentially-identical instance.
+- **Lambdas are auto-memoized** — `remember { }` around a lambda passed to a composable is no longer needed for skipping.
+
+**The finding bar — a stability finding requires ALL THREE:**
+1. the compiler report marks the param **unstable** (cite the report line — don't infer from source), AND
+2. the call site **allocates a fresh instance per recomposition** (so `===` fails every frame — e.g. `SomeTransformation()`, `listOf(...)`, `buildAnnotatedString { }`, or an inline `Brush.linearGradient(...)` in the call), AND
+3. the subtree is **hot or wide** (animates, or fans the param across many children) so the wasted recomposition is measurable.
+
+Miss any one and there is no finding: a report-unstable param whose instance is cache-stable across recompositions skips correctly by `===`; a fresh-allocated param feeding a cold, single-child subtree is noise.
+
 ## Step 2: Run Checks
 
-For each feature module, run all 8 checks:
+For each feature module, run all 8 checks. Checks 1–3 apply the calculus above (report-grounded); Checks 4–8 are source-pattern checks.
 
-### Check 1: Strong Skipping Compliance
+### Check 1: Strong-skipping compliance (per the calculus above)
 
-Since Kotlin 2.0+, strong skipping is enabled by default. Flag:
-- **INFO** — `@Stable` or `@Immutable` annotations on simple data classes — unnecessary with strong skipping (handles unstable params via `===`), safe to remove
-- **INFO** — `remember { }` wrapping lambdas passed to composables — unnecessary, strong skipping auto-memoizes lambdas
-- **PASS** — no unnecessary stability annotations
-- **INFO** — data classes from `data/api` modules used in composable parameters (fine with strong skipping)
+- **FAIL** — all three finding-bar conditions hold: report-unstable param + fresh per-recomposition allocation at the call site + hot/wide subtree.
+- **WARN** — a fresh per-recomposition allocation (condition 2) of a heavy value (`VisualTransformation`, `AnnotatedString`, `Regex`, `Brush`, `ImageVector`, `FontFamily`/`Typography`) that should be hoisted into `remember`, even if the subtree is currently cold — cheap to fix, defends against future hot use.
+- **PASS / INFO** — report shows the param stable, OR the unstable instance is cache-stable across recompositions (skips by `===`).
+- **Do NOT report** — `@Immutable`/`@Stable` as "removable", or `remember {}`-wrapped lambdas as "unnecessary" (see the folklore kill-list below).
 
-### Check 2: Reference Stability in combine Chains
+### Check 2: Reference stability in combine chains
 
-Search ViewModels for `combine(` usage. Flag:
-- **FAIL** — `.toList()`, `.map { it.copy() }`, or `.toMutableList()` applied to a flow within `combine` that creates new instances unnecessarily (breaks `===` for strong skipping)
-- **PASS** — flow values passed through without reference-breaking transforms
-- **INFO** — legitimate transforms (filtering, sorting, mapping to different type) that intentionally create new instances
+Search ViewModels for `combine(`. `combine` caches the latest value of each non-emitting upstream, preserving references so `===` skips them.
 
-### Check 3: Stability Annotations
+- **FAIL** — `.toList()`, `.map { it.copy() }`, `.toMutableList()`, or similar applied to an upstream value **that did not change**, breaking `===` for no reason.
+- **PASS** — flow values passed through without reference-breaking transforms.
+- **INFO** — legitimate transforms (filter/sort/map-to-different-type) that intentionally create new instances. If the *output* type is `@Immutable`, the new-but-equal instance still skips by `.equals()` — that is the correct design, not a finding (see Check 3).
 
-Flag:
-- **WARN** — `@Immutable` on data classes that are only used with `combine`-cached references (unnecessary with strong skipping)
-- **INFO** — `@Immutable` on data classes that are transformed on every emission (legitimate use)
-- **PASS** — stability config file (`stability-config.txt`) present and wired in Gradle (project-wide approach)
-- **FAIL** — `@Stable` on a mutable class (incorrect — `@Stable` promises immutability contract)
+### Check 3: Stability annotations (`@Immutable` is load-bearing, not redundant)
+
+`@Immutable` upgrades a class's comparison from `===` to `.equals()`. That is exactly what a `combine`-built (or otherwise per-emission-rebuilt) UiState needs: the upstream rebuilds a **new-but-equal** instance every emission, so `===` fails but `.equals()` succeeds — and only `.equals()`-comparison skips the subtree. Removing the annotation there re-breaks skipping.
+
+- **FAIL** — `@Stable` on a class with mutable public state (a false promise the compiler trusts).
+- **PASS** — `@Immutable` on any UiState/model rebuilt per emission (combine output, `.map`-per-emission, per-frame state derivation). This is a correct, load-bearing annotation — **do not flag it for removal.**
+- **PASS** — a stability configuration file present + wired in `composeCompiler {}` for `data/api` types the feature can't annotate at source. (Pure-Kotlin types get stability via the config, never via a Compose import in the data module.)
+- **INFO** — a data-layer model used as a composable param that the report marks unstable AND is rebuilt per emission AND has neither a config entry nor `@Immutable`: candidate for the stability-config or an annotation. Confirm with the report before recommending.
+
+**Generic types are stable iff their type arguments are.** A registered/annotated `Resource<T>` (or `List<T>`, `Cached<T>`, etc.) is still **unstable** when `T` is unstable — the compiler propagates argument instability through the container. A config entry for the container does NOT rescue it: register (or `@Immutable`) the **type arguments** too. Never mask this with a star-projection (`Foo<*>`) entry — that hides the real unstable argument.
+
+### Folklore kill-list — do NOT report these (refuted under strong skipping)
+
+- **"Unnecessary `@Immutable` under strong skipping" / "safe to remove `@Immutable`/`@Stable`."** False for any per-emission-rebuilt type — the annotation is what enables `.equals()`-skipping (Check 3). Only `@Stable` on a *mutable* class is a real finding.
+- **"`remember {}` around this lambda is unnecessary."** Lambdas are auto-memoized; a no-op observation, not a finding. (Fresh allocation of a *non-lambda* heavy value IS a finding — Check 1 WARN.)
+- **Blanket "migrate `List` → `ImmutableList`" recommendations.** An unstable `List` param compares by `===`, which is correct when the instance is cache-stable. Recommend `ImmutableList` only when the finding bar is met AND the list is genuinely rebuilt per recomposition — never as a sweep.
 
 ### Check 4: AnimatedContent contentKey
 
@@ -118,6 +157,8 @@ Then output a summary:
 ```
 
 Order action items: FAILs first, then WARNs. Include specific file paths and line numbers. Provide concrete fix suggestions for each issue.
+
+**Remediation.** For per-frame composition reads (Check 1) and stability-config drift (Check 3), name the applicable recipe from `references/compose-recomposition-migration-recipes.md` — the **deferred-reads migration** (move an animated read from the composition phase to draw/layout) or **stability-config reconciliation** (report-driven register/annotate + regenerate-to-prove-flips + an FQN-existence CI gate) — as the fix path, so the report tells the fixer where to start.
 
 ## Verdict
 [PASS — no performance issues / NEEDS FIXES — list what to address]

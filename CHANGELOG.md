@@ -1,5 +1,48 @@
 # Changelog
 
+## 2.13.0 — 2026-07-05
+
+### Changed — `cmp-quality` performance-audit: strong-skipping calculus (generic)
+- **`performance-audit`** agent rewritten around the **strong-skipping stability
+  calculus** (Kotlin ≥ 2.0.20), replacing the pre-2.0.20 folklore its Checks 1–3
+  carried. The agent now: (1) **grounds every stability finding in the Compose
+  compiler report** — a new evidence step wires `metricsDestination` /
+  `reportsDestination` and documents the empirically-verified regeneration gotcha
+  (the metrics options don't invalidate up-to-date compile tasks — `--rerun-tasks`
+  is required); (2) enforces a **three-part finding bar** (report-unstable param +
+  fresh per-recomposition allocation at the call site + hot/wide subtree — all three
+  required); (3) treats **`@Immutable` as load-bearing, not redundant** — it upgrades
+  comparison from `===` to `.equals()`, which is what per-emission-rebuilt
+  (combine-built) UiState needs to skip; (4) adds the **generic-type-argument rule**
+  (a container is stable iff its type arguments are — register the arguments, never a
+  `<*>` mask); and (5) ships a **folklore kill-list** the agent must NOT report
+  ("unnecessary `@Immutable` under strong skipping", "`remember {}`-wrapped lambdas
+  unnecessary", blanket `List` → `ImmutableList` migrations). The old Check 1/3 INFO/WARN
+  items that flagged `@Immutable`/`@Stable` for removal are gone.
+
+### Added — `cmp-quality` recomposition migration recipes (generic)
+- **`references/compose-recomposition-migration-recipes.md`** (new) — two
+  project-agnostic, behavior-preserving remediation recipes, each gated on screenshot
+  **zero-drift**: **(1) deferred-reads migration** (site-discovery greps → move an
+  animated read from the composition phase into draw/layout via
+  `drawWithCache`/`onDrawBehind`, `graphicsLayer`, or the lambda `offset {}` variant;
+  the `@Composable`-getter trap for theme tokens; KDoc-must-match-code); and **(2)
+  stability-config reconciliation** (regenerate reports → diff report-unstable domain
+  types vs the config → register/annotate → regenerate to prove the flips → guard with
+  a config-FQN existence gate, cross-referencing the `cmp-arch-gates` linter as the
+  gate's home). The `performance-audit` agent now names the applicable recipe as the
+  fix path in its report.
+- **`plugins/cmp-quality/PROVENANCE.md`** (new) — declares the `references/` content
+  authored-original (nothing vendored), satisfying `check-coupling.sh` check #5 now
+  that cmp-quality has a `references/` dir.
+
+### Changed
+- Plugin versions: `cmp-quality` 2.10.0 → 2.11.0. Marketplace 2.12.0 → 2.13.0.
+- Upstreamed from the streakbank-cmp presentation-integrity audit (2026-07); the
+  project-specific facts (registered types, config path, screenshot invocation,
+  in-repo reference composables) stay in the consuming project's shim per the
+  core/shim discipline.
+
 ## 2.12.0 — 2026-07-03
 
 ### Added — `cmp-arch-gates` plugin (new)
