@@ -1,6 +1,6 @@
 {
   "name": "cmp-scaffold",
   "description": "KMP architecture scaffolding skills — generate feature modules, screens, navigation, data sources, networking, persistence, image loading, theming, adaptive layouts, convention plugins, domain layer, UI polish, tests, string resources, import fixes, dependency upgrades, permissions, deep linking, analytics, background sync, and push notifications",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "author": { "name": "LadderPicks" }
 }

@@ -1,5 +1,40 @@
 # Changelog
 
+## 2.14.0 — 2026-07-05
+
+### Changed — `cmp-scaffold` compose-performance reference: strong-skipping calculus (generic)
+- **`references/compose-performance.md`** rewritten to the **same** strong-skipping
+  story the `cmp-quality` `performance-audit` agent and
+  `compose-recomposition-migration-recipes.md` now tell (shipped 2.13.0). The scaffold
+  reference had drifted to **pre-strong-skipping folklore** and actively contradicted the
+  audit side. Fixed:
+  - **`@Immutable` / `@Stable` reframed as load-bearing, not a last resort.** The old
+    "When You Still Need Stability Annotations / annotations are a last resort" framing is
+    gone. New "Stability Annotations Are Load-Bearing" section: a `combine`-built (or
+    otherwise per-emission-rebuilt) UiState is a **new-but-equal** instance every emission,
+    so `===` fails and only `.equals()`-comparison — which the annotation enables — skips
+    the subtree. This is the common case.
+  - **combine section corrected.** Reference caching preserves the **fields** of
+    non-emitting upstreams, but the transform lambda **builds a new wrapper every
+    emission**; passing that wrapper down (the idiomatic shape) needs `@Immutable` for
+    `.equals()`-skipping. The old diagram implied "no annotation needed in most cases."
+  - **`ImmutableList` de-blanketed.** Was Option 3 "strongest guarantee for
+    performance-critical lists"; now explicitly **not a blanket migration** — a
+    cache-stable `List` skips fine by `===`; use immutable collections only for genuine
+    uncacheable identity churn.
+  - **Added:** the generic-type-argument rule (a container is stable iff its type
+    arguments are — register the arguments, never a `<*>` mask); lambdas are auto-memoized;
+    the compiler report as the evidence source (`metricsDestination` / `reportsDestination`
+    + the `--rerun-tasks` regeneration gotcha).
+  - **Strong-skipping default corrected** Kotlin 2.0 → **2.0.20**; cross-references the
+    `cmp-quality` `performance-audit` finding bar + `compose-recomposition-migration-recipes.md`.
+  Structure/voice preserved; the unchanged sections (AnimatedContent contentKey,
+  Performance Budgets, lazy-list keys, image loading, ViewModel init) are verbatim.
+  Generic throughout — no project names.
+
+### Changed
+- Plugin versions: `cmp-scaffold` 2.10.0 → 2.11.0. Marketplace 2.13.0 → 2.14.0.
+
 ## 2.13.0 — 2026-07-05
 
 ### Changed — `cmp-quality` performance-audit: strong-skipping calculus (generic)
