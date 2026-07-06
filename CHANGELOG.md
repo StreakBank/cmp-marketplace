@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.16.0 — 2026-07-06
+
+### Added — `cmp-design-bridge` 0.3.0: the `design-intake` skill (screenshot → Compose)
+- **`skills/design-intake/SKILL.md`** (new) — implement a Compose screen from an
+  arbitrary raster (Figma export, competitor screenshot, photo of a mock): declare
+  content-box + theme-translation (judgment inputs), sequence the CLI's `intake`
+  (normalize/provenance/palette/grid/optional-OCR evidence; requires
+  cmp-design-bridge CLI ≥0.2.0), author the translate-to-the-design-system
+  Compose (component > token > flagged raw; ROLE-based cross-theme color mapping),
+  loop via `verify --reference imported` until the grade converges, then backfill
+  the design frame from the shipped source + gate with `lint --fail-on-backfill`.
+  Deliberately NOT a generator: no auto chrome detection, no pixel-diff gate.
+
 ## 2.15.0 — 2026-07-06
 
 ### Added — `cmp-quality` architecture migration recipes (harness-contract instances)

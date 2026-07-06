@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Claude Code plugins for KMP Compose Multiplatform \u2014 scaffolding skills, quality agents, the Claude Design \u2192 Compose bridge, and the architecture-gates linter",
-    "version": "2.15.0"
+    "version": "2.16.0"
   },
   "plugins": [
     {

@@ -25,7 +25,7 @@ acceptable fidelity?" — is the irreducibly model-driven leg, and YOU do it.
    ```
    cmp-design-bridge verify <stateId> --config <repo>/.design-bridge --render
    ```
-   This writes `<cache>/out/<stateId>.{design.png, montage.png, fidelity-packet.json}`
+   This writes `<cache>/out/<stateId>.{design.png, montage.png, fidelity-packet.json}` (imported-reference mode: the reference artifact is `<stateId>.reference.png`; the packet's `designPng` field aliases it, so read the packet's paths rather than assuming basenames)
    and prints the mechanical-gate result (render console-clean, width-ok,
    subject capture exists). If the mechanical gates FAIL, stop and fix the render
    before grading.
