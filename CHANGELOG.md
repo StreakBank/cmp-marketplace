@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.17.0 — 2026-07-06
+
+### Added — `cmp-quality` 2.13.0: Recipe F (presentation file-shape decomposition)
+- **`references/architecture-migration-recipes.md`** gains Recipe F — the *Screen
+  file contract sweep (entry+dispatch-only Screen files; one-section views/ files),
+  written against the migration-harness recipe contract and extracted from a real
+  20-site run (census-driven discovery, screenshot-test-coupling inventory, pure-
+  motion default with three named escalation classes, zero-drift-from-results-
+  artifact verify, allowlist-burn-down completion gate, four observed failure modes).
+
 ## 2.16.0 — 2026-07-06
 
 ### Added — `cmp-design-bridge` 0.3.0: the `design-intake` skill (screenshot → Compose)

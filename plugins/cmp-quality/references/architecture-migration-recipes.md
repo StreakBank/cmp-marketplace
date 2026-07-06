@@ -266,3 +266,69 @@ tool's zero-drift invocation; which platform canaries apply; the adjacent consum
 (e2e harnesses, external tools) whose survival Recipe D must check. Keep those in the
 project's `.claude/` estate and `.arch-gates/` config; keep these recipes
 tool-generic.
+
+---
+
+## Recipe F — Presentation file-shape decomposition (*Screen file contract)
+
+**Target invariant.** Every `*Screen.kt` holds the screen's entry + dispatch tier only
+(route root; ≤1 shell/chrome dispatcher owning the screen-root `when`; body/loading
+dispatchers; tier-serving helpers) at ≤ N composables AND ≤ M lines (typical: 4/400);
+every other presentation `.kt` declaring a composable renders one cohesive section at
+≤ M lines and lives under the destination's `views/` (module-root `views/` when
+cross-destination). Pixel-neutral: screenshot zero-drift is the definition of success.
+
+**Site discovery.** Scripted census, never impressions: per-file line counts +
+`@Composable` fun counts by visibility (annotation-on-own-line + inline forms, over
+comment/string-blanked source) + package depth + views/ presence + **screenshot-test
+coupling** (which internal composables tests render directly — only `internal`
+symbols can be test-bound; `private` composables are always free to move). Root-cause
+check worth repeating: in the extraction run, git archaeology showed extraction was
+event-driven (feature commits) and never size-driven, and per-destination package
+migrations moved screen bodies as atoms — expect both.
+
+**Classification table.**
+
+| Mostly | Escalation site(s) |
+|---|---|
+| mechanical (pure code motion: move section composables to `views/`, `private`→`internal` only where a symbol now crosses files, KDoc travels with code, test imports updated) | (1) a monolithic single-composable body that must be CUT into new section composables (new function boundaries = not pure motion) — approve the split class once, then cut ONLY at visually-delineated section boundaries with call order + spacer sequence preserved; (2) a destination-package completion (flat module → per-destination) that moves a ViewModel registered in a Compose stability config — the FQN must update in the same commit; (3) destination package NAMING (a human choice the gate can't test) |
+
+**Transform.** Fan out decompositions with strict file partitioning (disjoint
+dirs + named test files; "import lines only" grants for cross-partition importer
+updates). Composables sharing file-local `remember` state STAY TOGETHER — hoisting
+state is a behavior change, not motion. Package moves are lead-scripted (git mv +
+package/import/FQ rewrites), not agent-freeform: enumerate ALL top-level symbols of
+moved files first and rewrite every FQ reference (missing a sibling symbol like an
+enum in the moved VM file is the classic gap).
+
+**Per-site verify.**
+
+```sh
+node "$ML" add-verify --id compile --type command --template "<module compile task for {module}>" --granularity module
+node "$ML" add-verify --id zerodrift --type command --template "<module screenshot-compare + summary assert for {module}>" --granularity module
+node "$ML" add-verify --id fileshape --type command --template "<the file-shape lint>" --granularity global
+```
+
+Zero-drift must be asserted from the comparison tool's RESULTS artifact
+(changed==0 && recorded==0 && added==0) — a green build alone does not prove it.
+
+**Completion gate.** Full unit tests + GLOBAL screenshot compare (every module) +
+platform compile canaries + the file-shape lint with its allowlist burned down to
+empty (stale-entry-fails ratchet: the cmp-arch-gates `presentation-file-shape` gate
+FAILS on allowlist entries whose file no longer violates, so the list only shrinks).
+
+**Known failure modes (observed in the extraction run).**
+
+- **Missing-import self-attestation:** a transform agent reported clean past a
+  missing `dp` import; the mechanical compile probe caught it in seconds. Never skip
+  the per-site compile probe.
+- **Same-package-unimported test coupling:** test files in the moved package accessed
+  symbols WITHOUT imports; a package move breaks them invisibly to grep-based import
+  rewrites. Budget a test-source-set compile fix-loop into every package-move site
+  (the compiler enumerates exactly the needed imports).
+- **Mixed escape forms defeat exact-string editing:** files mixing `\uXXXX` escapes
+  and literal glyphs can't be edited by exact-match replacement — splice by verified
+  line anchors instead.
+- **`views/` becomes the new dumping ground** without the ≤M-lines section-file rule:
+  in the source codebase an extracted views file was born at 600 lines and accreted
+  to 932 because only Screen files were being watched. Gate BOTH file classes.

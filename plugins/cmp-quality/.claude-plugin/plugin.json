@@ -1,7 +1,7 @@
 {
   "name": "cmp-quality",
   "description": "KMP architecture auditing and validation agents \u2014 compliance checks, code review, module validation, dependency analysis, accessibility auditing, test validation, and performance auditing",
-  "version": "2.12.0",
+  "version": "2.13.0",
   "author": {
     "name": "LadderPicks"
   }
