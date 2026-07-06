@@ -184,6 +184,32 @@ fast pre-commit gate.
 
 ---
 
+## Running these under the migration-harness (classification + per-site verify)
+
+Both recipes are runnable as staged migrations under the **`migration-harness`**
+plugin (agent-marketplace) — the ledger/fan-out/escalation machinery lives there;
+this section supplies the two contract slots the recipes above don't state.
+
+**Classification table** (the discriminator: can the completion gate tell right from
+wrong?):
+
+| Recipe | Mostly | Escalation site(s) |
+|---|---|---|
+| 1 — deferred-reads | mechanical (the zero-drift gate catches a wrong transform) | any restructure whose equivalence argument must reason about **emission order**, not just values — e.g. hoisting a derivation across reactive-flow topology. A value-identical hop can reorder arrivals and leak a new intermediate state that only sequence-asserting tests catch; if you can't argue the ordering, escalate or skip. Also: resolving a KDoc-vs-code contradiction (which one is the intent?) |
+| 2 — stability-config | mechanical (the regenerated report is the proof) | a type where registering-vs-annotating is a policy fork — adding `@Immutable` would put a Compose dependency on a deliberately Compose-free module, or the type is shared by consumers with different stability expectations |
+
+**Per-site verify declarations** (templates come from the project shim):
+
+```sh
+node "$ML" add-verify --id compile --type command --template "<per-module compile task for {module}>" --granularity module
+# Recipe 1: the zero-drift screenshot compare is the completion gate (whole-module);
+# Recipe 2: the per-site proof is the regenerated report flip — declare it as a
+# command probe if the project exposes a per-module report task, else it stays a
+# completion-gate obligation.
+```
+
+---
+
 ## Where the project-specific half lives
 
 Both recipes are generic mechanics. The **facts** stay in the consuming project's shim:

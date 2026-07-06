@@ -4,8 +4,8 @@
     "name": "StreakBank"
   },
   "metadata": {
-    "description": "Claude Code plugins for KMP Compose Multiplatform — scaffolding skills, quality agents, the Claude Design → Compose bridge, and the architecture-gates linter",
-    "version": "2.14.0"
+    "description": "Claude Code plugins for KMP Compose Multiplatform \u2014 scaffolding skills, quality agents, the Claude Design \u2192 Compose bridge, and the architecture-gates linter",
+    "version": "2.15.0"
   },
   "plugins": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "cmp-design-bridge",
       "source": "./plugins/cmp-design-bridge",
-      "description": "Claude Design → Compose bridge skills (design→Compose transform + cross-framework fidelity verdict); requires the cmp-design-bridge CLI from npm"
+      "description": "Claude Design \u2192 Compose bridge skills (design\u2192Compose transform + cross-framework fidelity verdict); requires the cmp-design-bridge CLI from npm"
     },
     {
       "name": "cmp-arch-gates",

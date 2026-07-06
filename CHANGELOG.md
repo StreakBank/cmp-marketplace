@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.15.0 — 2026-07-06
+
+### Added — `cmp-quality` architecture migration recipes (harness-contract instances)
+- **`references/architecture-migration-recipes.md`** (new) — five proven,
+  project-agnostic architecture/state-lifecycle recipes, each written against the
+  `migration-harness` plugin's recipe contract (agent-marketplace): visibility-
+  `internal` sweep, dead-code/dead-edge removal, transport→domain-error boundary
+  translation, threaded-param removal sweep, and flow start-mode sweep (stateIn
+  Eagerly→WhileSubscribed — incl. the cross-step pre-fill escalation site, the
+  Turbine sequence-test pre-collect fix, and the false-passing-test coverage trap,
+  all observed in the validating run). Each recipe states its target invariant,
+  discovery mechanics, **classification table** (mechanical vs batch-escalate sites),
+  transform shape (foundation-inline vs fan-out), **per-site verify declarations**
+  (mechanical — never transform-agent self-attestation), completion gate (pointing at
+  the `cmp-arch-gates` deterministic gates), and known failure modes observed in real
+  executions.
+- **`references/compose-recomposition-migration-recipes.md`** — new section "Running
+  these under the migration-harness" retrofits the two missing contract slots
+  (classification/escalation table incl. the emission-order equivalence trap;
+  per-site verify declarations) onto the existing deferred-reads and stability-config
+  recipes.
+- **`PROVENANCE.md`** updated for the new authored-original reference.
+
+Plugin versions: `cmp-quality` 2.11.0 → 2.12.0. Marketplace 2.14.0 → 2.15.0.
+
 ## 2.14.0 — 2026-07-05
 
 ### Changed — `cmp-scaffold` compose-performance reference: strong-skipping calculus (generic)
