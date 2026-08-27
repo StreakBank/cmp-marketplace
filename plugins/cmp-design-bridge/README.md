@@ -29,8 +29,14 @@ in that state's `<cache>/out/<stateId>.pull-manifest.json` — the manifest writ
 the **last local `render`** of that state — and the join manifest is rewritten in
 place. A row that already carries a real pin is instead **VERIFIED** against that same
 local artifact (a mismatch is reported as `CONTENT_HASH_DRIFT`). Stamping is the
-default; `--no-stamp` makes the whole command read-only (no row rewritten, no manifest
-written).
+default; `--no-stamp` makes the command read-only **with respect to the join
+manifest** — no row rewritten, the manifest not written back. It is not
+side-effect-free: `lint` always (re)creates its out dir and writes its own
+`join-lint-report.json` there.
+
+`<cache>/out` is the *default* out dir and `--out <dir>` overrides it — for `render`
+and for `lint` alike, so the two must agree. A `render --out X` followed by a bare
+`lint` reads a different directory and reports every state as "no render yet".
 
 **Why a stamping PASS is unreliable.** Both the stamp and the verify read the local
 render output, never the design source. If `.cache/` is stale — frames pulled a while
@@ -40,8 +46,9 @@ branch — then:
 - an `auto` row is pinned to the **stale** hash, and from then on reports
   "designContentHash verified (no drift)" forever, even though the authoritative frame
   has moved since;
-- a state with **no** local render at all is skipped with an informational "no render
-  yet" line and contributes nothing to the PASS.
+- a state with **no** local render at all lands on the **PASS side** — a "no render
+  yet" `ok` line, not a finding — so an unrendered state can never fail the lint, and
+  a run over an empty cache passes the pin check having verified nothing.
 
 So a stamping lint's PASS is only as fresh as `.cache/out`, and it silently converts
 cache staleness into a durable, wrong pin. The one thing it refuses is pinning from a
@@ -78,9 +85,10 @@ exist today** — do not write config or CI against them.
   dir is read as a screen state, so component-level captures land in the backfill queue
   or the stale-orphan list and skew the coverage burndown.
 - **Shell-scoped state mapping (a non-module `shell-*` prefix) — NOT IMPLEMENTED.**
-  Module resolution is purely `statePrefix` → module, so cross-cutting app-shell/chrome
-  states whose prefix belongs to no feature module cannot be mapped to a capture dir
-  without inventing a placeholder module entry.
+  Every state binds to a **module entry** (its frames folder, its `captureDir`, its
+  `statePrefix`), so cross-cutting app-shell/chrome states belonging to no feature
+  module cannot be mapped to a capture dir without inventing a placeholder module
+  entry.
 - **Cross-folder hash blindness — NOT IMPLEMENTED (open defect).** The content hash
   covers the frame plus the **same-folder** `_*.jsx` siblings only; a frame that depends
   on a file in another folder pins and re-verifies clean while its real source has

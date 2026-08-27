@@ -1,5 +1,39 @@
 # Changelog
 
+## 2.17.2 — 2026-08-26
+
+### Fixed — `cmp-design-bridge` 0.3.2: four accuracy corrections to the 2.17.1 caveat
+A refute pass re-read the wrapped CLI (v0.2.0) against the text shipped in 2.17.1 and
+found four statements that overstate or misdescribe the mechanism. Docs only; no new
+CLI surface is claimed and nothing below changes what a command does.
+
+- **`--no-stamp` is not "read-only" full stop.** It is read-only *with respect to the
+  join manifest* — no row rewritten, the manifest not written back — but `lint` still
+  (re)creates its out dir and writes its own `join-lint-report.json` there on every
+  run. Corrected in the README; matters to anyone gating CI on a clean tree.
+- **An unrendered state lands on the PASS side, not "contributes nothing to the
+  PASS".** The 2.17.1 README and this changelog's 2.17.1 entry described the same
+  behaviour in opposite directions. Ground truth: a state with no local render is
+  recorded as a "no render yet" `ok` check, never a finding — so it can never fail the
+  lint, and a run over an empty cache passes the pin check having verified nothing.
+- **The out dir is not fixed at `<cache>/out`.** `--out <dir>` overrides it for
+  `render` and for `lint` alike, so the two must agree: `render --out X` followed by a
+  bare `lint` reads a different directory and reports every state as "no render yet".
+  Added to the caveat — it is a second, non-obvious way to get a vacuous PASS.
+- **Module binding is not "purely `statePrefix` → module".** A state binds to a module
+  *entry* — its frames folder, its `captureDir`, and its `statePrefix` — which is why
+  the shell-scoped-state gap still needs a placeholder module entry. The Wanted item's
+  conclusion is unchanged; only its stated reason was imprecise.
+
+Also for the record, correcting 2.17.1's trailer: that release was docs **plus one
+prescriptive change** — `design-intake` step 6 now wires CI to `lint --no-stamp
+--fail-on-backfill` instead of a stamping `--fail-on-backfill`. No code file exists in
+this plugin (5 SKILL.md + README + plugin.json), and the flag pair was verified valid
+against the CLI (the backfill gate is independent of stamping), but "no skill mechanics
+changed" understated it.
+
+Plugin versions: `cmp-design-bridge` 0.3.1 → 0.3.2. Marketplace 2.17.1 → 2.17.2.
+
 ## 2.17.1 — 2026-08-26
 
 ### Added — `cmp-design-bridge` 0.3.1: the stamping-`lint` freshness caveat + a Wanted list

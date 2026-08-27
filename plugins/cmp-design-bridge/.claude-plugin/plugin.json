@@ -1,7 +1,7 @@
 {
   "name": "cmp-design-bridge",
   "description": "Claude Design → Compose bridge — skills for the design→idiomatic-Compose transform and the cross-framework fidelity verdict. Requires the cmp-design-bridge CLI: `npm i -g cmp-design-bridge`.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
     "name": "StreakBank"
   }
