@@ -79,8 +79,12 @@ consuming repo enables the OCR evidence sidecar.
    Author the per-state frame from the SHIPPED implementation source (the
    project's standard frame-authoring recipe — that grounding is proven; a
    raster is not), upload via the gated `/design-push`, re-run `pull` +
-   `lint`. Wire `lint --fail-on-backfill` into CI so a captured-but-frameless
-   enrolled state blocks merge rather than lingering.
+   `lint`. **Render the state before any STAMPING `lint`** — a stamping lint pins
+   `auto` rows from the local render cache, so a stale `.cache/out` pins a stale
+   hash that then reads as "no drift" forever (plugin README: "a stamping `lint`
+   re-pins from your LOCAL render cache"). Wire `lint --no-stamp
+   --fail-on-backfill` into CI — read-only, and a captured-but-frameless enrolled
+   state blocks merge rather than lingering.
 
 ## What this skill never does
 No deterministic screenshot→Compose generation (that is a bad transpiler); no

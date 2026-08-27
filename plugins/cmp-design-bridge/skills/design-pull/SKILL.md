@@ -48,6 +48,10 @@ lives in the CLI, not here). Install: `npm i -g cmp-design-bridge`.
 4. **Sanity-check the toolchain** once with `cmp-design-bridge doctor --config …`.
 
 ## Notes
+- `pull --write-manifest` writes new rows with `designContentHash: "auto"`, and a
+  later **stamping** `lint` pins those from the LOCAL render cache — so `render`
+  every state in scope BEFORE stamping, and gate commits on `lint --no-stamp`.
+  See the plugin README, "a stamping `lint` re-pins from your LOCAL render cache".
 - The DS runtime is the project's committed render runtime
   (`render-recipe.dsRuntimeSource` → `.design-bridge/ds-runtime/`),
   hash-anchored to the upload; it is NOT pulled per-module.

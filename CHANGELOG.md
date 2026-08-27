@@ -1,5 +1,42 @@
 # Changelog
 
+## 2.17.1 — 2026-08-26
+
+### Added — `cmp-design-bridge` 0.3.1: the stamping-`lint` freshness caveat + a Wanted list
+- **`README.md`** gains **"Caveat — a stamping `lint` re-pins from your LOCAL render
+  cache"** (the paid-for lesson, returned from a consuming project): `lint` STAMPS a
+  row whose `designContentHash` is `auto` with the `sourceContentHash` from that
+  state's `<cache>/out/<stateId>.pull-manifest.json` — the last **local** `render` —
+  and rewrites the join manifest in place; a row that already carries a pin is
+  VERIFIED against that same local artifact. Both sides read the render cache, never
+  the design source, so a stale `.cache/out` pins a **stale** hash that then reports
+  "verified (no drift)" forever, and a state with no local render at all is skipped
+  as informational while still counting toward the PASS. **A stamping lint's PASS is
+  only as fresh as `.cache/out`.** Documents the only order that produces true pins
+  (`pull --write-manifest` → `render` every state in scope → `lint --no-stamp` as the
+  **commit gate** → one stamping `lint` → commit the pins) and states that
+  `--no-stamp` is the safe default in CI/automation, because a stamping run *writes*
+  the manifest and can commit pins nobody reviewed.
+- **`skills/design-pull/SKILL.md`** — Notes gain the causal link: `pull
+  --write-manifest` emits `designContentHash: "auto"` rows, which a later stamping
+  `lint` pins from the local cache; render before stamping, gate on `--no-stamp`.
+- **`skills/design-intake/SKILL.md`** — step 6 (backfill) now says to render before
+  any stamping lint, and wires CI to `lint --no-stamp --fail-on-backfill` rather than
+  a stamping `--fail-on-backfill`.
+- **`README.md`** also gains **"Wanted in the CLI — NOT IMPLEMENTED (recorded
+  2026-08-26)"** — four gaps observed in real use, each explicitly marked as not
+  shipped so nobody writes config or CI against them: `extraContentGlobs` (fold extra
+  per-module files into the content hash), `componentCaptures` (a declared
+  component-isolation capture class, so component PNGs stop skewing the backfill
+  queue / stale-orphan list / coverage burndown), shell-scoped state mapping (a
+  non-module `shell-*` prefix has no module to resolve to, since resolution is purely
+  `statePrefix` → module), and cross-folder hash blindness (the content hash covers
+  the frame plus **same-folder** `_*.jsx` siblings only, so a cross-folder dependency
+  re-verifies clean while its real source moved).
+
+Plugin versions: `cmp-design-bridge` 0.3.0 → 0.3.1. Marketplace 2.17.0 → 2.17.1.
+Docs only — no skill mechanics changed.
+
 ## 2.17.0 — 2026-07-06
 
 ### Added — `cmp-quality` 2.13.0: Recipe F (presentation file-shape decomposition)
