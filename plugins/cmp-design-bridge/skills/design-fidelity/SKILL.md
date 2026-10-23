@@ -17,7 +17,7 @@ GRADE itself — "do these two engine-different renders depict the same screen a
 acceptable fidelity?" — is the irreducibly model-driven leg, and YOU do it.
 
 **CLI:** the skill calls the standalone `cmp-design-bridge` command (install:
-`npm i -g cmp-design-bridge`).
+`npm i -g cmp-design-bridge@0.2.1`).
 
 ## Steps
 

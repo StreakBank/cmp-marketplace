@@ -20,7 +20,7 @@ pixels are the screen vs foreign status-bar/OS chrome) and the
 dark-only estate?). Everything deterministic lives in the CLI.
 
 **CLI:** the standalone `cmp-design-bridge` command (install: `npm i -g
-cmp-design-bridge`; ≥0.2.0 for `intake`). Optional: `npm i tesseract.js` in the
+cmp-design-bridge@0.2.1`). Optional: `npm i tesseract.js` in the
 consuming repo enables the OCR evidence sidecar.
 
 ## Steps

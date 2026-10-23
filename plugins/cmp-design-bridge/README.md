@@ -14,12 +14,26 @@ the two model-driven legs:
 These skills call the standalone CLI (a separate npm package):
 
 ```bash
-npm i -g cmp-design-bridge
+npm i -g cmp-design-bridge@0.2.1
 ```
 
 The CLI does the deterministic work (pull / render / lint / verify); the skills
 sequence it and make the two irreducibly model-driven calls. Per-project config
 lives in the consuming repo's `.design-bridge/`.
+
+## Safe CLI help and argument handling
+
+This wrapper targets CLI **0.2.1**; update the separate npm package deliberately,
+never through a skill invocation. See [PROVENANCE.md](PROVENANCE.md) for the release
+binding and verification status. The CLI rejects unknown/cross-command flags,
+missing or malformed values, duplicate/conflicting flags, and extra positionals
+before loading CONFIG or doing command work. Use its declared flags with separate
+values (`--config <dir>`, not `--config=<dir>`).
+
+Root `cmp-design-bridge --help` and `<command> --help` are side-effect-free in
+0.2.1. **CLI 0.2.0 runs stamping lint for `lint --help`; use root help on that
+version.** Neither this fix nor the wrapper changes lint's stamping default or
+makes a successful lint prove that renders are fresh. The caveat below still applies.
 
 ## Caveat — a stamping `lint` re-pins from your LOCAL render cache
 
@@ -93,3 +107,12 @@ exist today** — do not write config or CI against them.
   covers the frame plus the **same-folder** `_*.jsx` siblings only; a frame that depends
   on a file in another folder pins and re-verifies clean while its real source has
   changed. `extraContentGlobs` is the candidate fix.
+
+## Returning tool learnings
+
+Generic CLI argument or command defects belong in the
+[CLI repository](https://github.com/StreakBank/cmp-design-bridge); sequencing and
+skill guidance belong in the
+[wrapper repository](https://github.com/StreakBank/cmp-marketplace). Return the
+fix with regression evidence, a version/changelog update, and this plugin's
+provenance. Keep project-specific policy in the consuming CONFIG or shim.

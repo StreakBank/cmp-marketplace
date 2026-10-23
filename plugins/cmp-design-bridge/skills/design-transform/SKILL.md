@@ -20,7 +20,7 @@ inputs (the rendered frame, the source JSX, the conventions, the token maps) and
 YOU author the Compose.
 
 **CLI:** the skill calls the standalone `cmp-design-bridge` command (install:
-`npm i -g cmp-design-bridge`).
+`npm i -g cmp-design-bridge@0.2.1`).
 
 ## Steps
 

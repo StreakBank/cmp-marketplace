@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.17.3 — 2026-10-22
+
+### Fixed — `cmp-design-bridge` 0.3.3: strict CLI arguments and safe help return
+
+- Pin the CLI prerequisite/install references to 0.2.1, which validates arguments
+  before CONFIG access and makes per-command help side-effect-free. The prior
+  0.2.0 `lint --help` executed stamping lint; root help is safe on that version.
+- Document the version boundary and learning-return ownership, retain the local
+  render freshness caveat, and add a release provenance record. No new CLI command,
+  skill workflow, tool permission, or default lint mode is introduced by the wrapper.
+
+Plugin versions: `cmp-design-bridge` 0.3.2 → 0.3.3. Marketplace 2.17.2 → 2.17.3.
+
 ## 2.17.2 — 2026-08-26
 
 ### Fixed — `cmp-design-bridge` 0.3.2: four accuracy corrections to the 2.17.1 caveat
