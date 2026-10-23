@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.17.4 — 2026-10-23
+
+### Updated — `cmp-design-bridge` 0.3.4: CLI 0.3.0 recipe evidence
+
+- Require the separately installed CLI 0.3.0 for exact-state recipe overrides,
+  inherited viewport/crop/settle values, and portable effective-recipe evidence.
+  Document fresh renders after missing/stale evidence and fresh intake for stale
+  imported references; preserve the historical 0.2.1 safe-help boundary.
+- Correct the live pull workflow: the native Design MCP refreshes/stages files;
+  CLI `pull` validates those local bytes. Refresh every actual same-folder JSX
+  helper and preserve curated rows instead of routinely replacing the manifest.
+- Retain deliberate stamping, `--no-stamp` gates and report-write caveats, whole
+  affected-folder render scope, and content/runtime hash limitations. No new CLI
+  command, skill, tool permission, agent or transport is introduced.
+
+Plugin versions: `cmp-design-bridge` 0.3.3 → 0.3.4. Marketplace 2.17.3 → 2.17.4.
+
 ## 2.17.3 — 2026-10-22
 
 ### Fixed — `cmp-design-bridge` 0.3.3: strict CLI arguments and safe help return

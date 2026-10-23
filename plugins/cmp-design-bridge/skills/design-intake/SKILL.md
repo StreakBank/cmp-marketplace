@@ -19,8 +19,9 @@ pixels are the screen vs foreign status-bar/OS chrome) and the
 **theme-translation** (is this a cross-theme input — e.g. a light design for a
 dark-only estate?). Everything deterministic lives in the CLI.
 
-**CLI:** the standalone `cmp-design-bridge` command (install: `npm i -g
-cmp-design-bridge@0.2.1`). Optional: `npm i tesseract.js` in the
+**CLI:** requires a separately installed `cmp-design-bridge` 0.3.0 command
+(`npm i -g cmp-design-bridge@0.3.0`); the wrapper does not install or upgrade it.
+Arrange any CLI update outside this skill. Optional: `npm i tesseract.js` in the
 consuming repo enables the OCR evidence sidecar.
 
 ## Steps
@@ -36,11 +37,21 @@ consuming repo enables the OCR evidence sidecar.
    The module resolves from the longest config `statePrefix` — pass `--module`
    when the stateId matches none. Heed the inventory warning: enroll the stateId
    in the project's state inventory so the burndown + backfill gate see it.
+   If CONFIG declares a `stateOverrides` entry, enroll that exact ID before
+   loading it. The override inherits omitted viewport/crop/settle values; null
+   clip height selects intrinsic height. Imported physical width/crop dimensions
+   use nearest-integer rounding, positive half ties up, with a one-pixel minimum;
+   fractional CSS width/DPR remain valid. Inspect the integral transform parameters
+   alongside the original effective recipe values.
 
 2. **Read the evidence.** `Read` the normalized `<cache>/out/<stateId>.reference.png`
    (canonical geometry — measure directly in dp via the `<stateId>.grid.png`
    overlay), the intake manifest (palette census + token pairing), and the OCR
    sidecar if present (ADVISORY — the raster is authoritative over it).
+   Require current `effectiveRecipe` and `recipeHash`. Imported verify fails
+   `recipeCurrent`/`notStale` for missing or stale recipe evidence, including
+   predecessor manifests; repeat intake with the intended source and crop.
+   `verify --render` cannot repair an imported reference.
 
 3. **Author the Compose — translate to the design system, don't pixel-clone.**
    Apply the consuming project's faithfulness policy (its shim rule) if one
@@ -78,13 +89,17 @@ consuming repo enables the OCR evidence sidecar.
    for IMPLEMENTATION; the project's design source of truth still needs a frame.
    Author the per-state frame from the SHIPPED implementation source (the
    project's standard frame-authoring recipe — that grounding is proven; a
-   raster is not), upload via the gated `/design-push`, re-run `pull` +
-   `lint`. **Render the state before any STAMPING `lint`** — a stamping lint pins
-   `auto` rows from the local render cache, so a stale `.cache/out` pins a stale
-   hash that then reads as "no drift" forever (plugin README: "a stamping `lint`
-   re-pins from your LOCAL render cache"). Wire `lint --no-stamp
-   --fail-on-backfill` into CI — read-only, and a captured-but-frameless enrolled
-   state blocks merge rather than lingering.
+   raster is not), upload via the gated `/design-push`, then refresh/stage it and
+   every actual same-folder `_*.jsx` helper through the native MCP. CLI `pull`
+   validates those staged bytes; it does not download them. Preserve curated
+   manifest rows and add only reviewed new rows, rather than regenerating the whole
+   live manifest. **Render every affected state before any stamping lint**, including
+   all frames sharing a changed helper. Recipe evidence does not close cross-folder
+   or runtime-asset hashing gaps. Gate with `lint --no-stamp --fail-on-backfill`,
+   then stamp deliberately only from the fresh reviewed render set. The flag
+   preserves the join manifest but still writes a report; a captured-but-frameless
+   enrolled state blocks merge rather than lingering. A no-render lint PASS is not
+   evidence of rendering. See the plugin README's cache and hash limitations.
 
 ## What this skill never does
 No deterministic screenshot→Compose generation (that is a bad transpiler); no

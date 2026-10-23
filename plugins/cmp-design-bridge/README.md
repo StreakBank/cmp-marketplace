@@ -11,29 +11,58 @@ the two model-driven legs:
 
 ## Prerequisite
 
-These skills call the standalone CLI (a separate npm package):
+These skills require the separately installed standalone CLI 0.3.0:
 
 ```bash
-npm i -g cmp-design-bridge@0.2.1
+npm i -g cmp-design-bridge@0.3.0
 ```
 
-The CLI does the deterministic work (pull / render / lint / verify); the skills
-sequence it and make the two irreducibly model-driven calls. Per-project config
-lives in the consuming repo's `.design-bridge/`.
+Installing this wrapper does not install or upgrade the CLI. Update the npm package
+deliberately outside a skill invocation before using its 0.3.0 configuration and
+evidence contract. Per-project config lives in the consuming repo's `.design-bridge/`.
+The native Design MCP fetches files into that config's staged frame cache; CLI
+`pull` validates already staged bytes and does not download canvas files. The skills
+sequence those operations and the two model-driven legs.
 
 ## Safe CLI help and argument handling
 
-This wrapper targets CLI **0.2.1**; update the separate npm package deliberately,
+This wrapper targets CLI **0.3.0**; update the separate npm package deliberately,
 never through a skill invocation. See [PROVENANCE.md](PROVENANCE.md) for the release
 binding and verification status. The CLI rejects unknown/cross-command flags,
 missing or malformed values, duplicate/conflicting flags, and extra positionals
 before loading CONFIG or doing command work. Use its declared flags with separate
 values (`--config <dir>`, not `--config=<dir>`).
 
-Root `cmp-design-bridge --help` and `<command> --help` are side-effect-free in
+Root `cmp-design-bridge --help` and `<command> --help` are side-effect-free since
 0.2.1. **CLI 0.2.0 runs stamping lint for `lint --help`; use root help on that
 version.** Neither this fix nor the wrapper changes lint's stamping default or
 makes a successful lint prove that renders are fresh. The caveat below still applies.
+
+## Exact-state recipes and render-evidence refresh
+
+CLI 0.3.0 supports `render-recipe.json`'s `stateOverrides` map, keyed by exact IDs
+already enrolled in the join manifest or state inventory. Each entry may override
+`viewport.logicalWidthCss`, `viewport.dpr`, `clipHeight` and `settleMs`. Omitted
+values inherit the base recipe; `clipHeight: null` selects intrinsic height. There
+is no prefix or wildcard matching. Unknown IDs/keys and invalid dimensions fail
+during config loading. Ordinary `render`/`verify` use the same canonical CONFIG;
+do not shrink a component frame or copy manifests from another config to pass the
+width gate.
+
+Render evidence records `effectiveRecipe` and `recipeHash` for normalized width,
+DPR, crop and settle values, without machine paths. Missing or stale evidence,
+including predecessor manifests, makes rendered `verify` refresh the state and
+makes `lint` refuse its pin (`STALE_RENDER_RECIPE`). Refresh every state whose
+local render evidence will be consumed when adopting 0.3.0. A recipe-only change
+requires new render evidence even when the HTML/JSX content pin stays unchanged.
+
+Imported intake uses the same effective geometry. Imported `verify` fails
+`recipeCurrent`/`notStale` when recipe evidence is missing or stale; repeat intake
+with the intended source and crop before grading. It cannot re-render a raster
+automatically. Fractional CSS widths and DPR are accepted: imported physical
+width/crop dimensions round to the nearest whole pixel, positive half ties up,
+with a one-pixel minimum; intake parameters and imported verification use the same
+rule. The recipe fingerprint retains the original effective values.
 
 ## Caveat — a stamping `lint` re-pins from your LOCAL render cache
 
@@ -52,8 +81,9 @@ side-effect-free: `lint` always (re)creates its out dir and writes its own
 and for `lint` alike, so the two must agree. A `render --out X` followed by a bare
 `lint` reads a different directory and reports every state as "no render yet".
 
-**Why a stamping PASS is unreliable.** Both the stamp and the verify read the local
-render output, never the design source. If `.cache/` is stale — frames pulled a while
+**Why a stamping PASS is unreliable.** Both the stamp and the pin check read local
+render output, never the remote design source. Even with current recipe evidence,
+if `.cache/` is stale — frames pulled a while
 ago, a state not re-rendered since the last pull, renders left over from another
 branch — then:
 
@@ -65,19 +95,25 @@ branch — then:
   a run over an empty cache passes the pin check having verified nothing.
 
 So a stamping lint's PASS is only as fresh as `.cache/out`, and it silently converts
-cache staleness into a durable, wrong pin. The one thing it refuses is pinning from a
-render that failed its own gate (`STAMP_FROM_FAILED_RENDER`) — everything else about
-freshness is on you.
+cache staleness into a durable, wrong pin. It refuses missing/stale recipe evidence
+(`STALE_RENDER_RECIPE`) and failed renders (`STAMP_FROM_FAILED_RENDER`); those
+checks do not fetch current canvas content or prove complete render coverage.
 
 **Recommended sequence** (the only order that produces true pins):
 
-1. `pull --write-manifest` — refresh every frame from the design source and regenerate
-   the rows.
-2. `render` **every state in scope** — repopulate `<cache>/out/` so the hashes describe
-   the frames you just pulled.
-3. `lint --no-stamp` — the read-only integrity check. **This is the commit gate.**
-4. `lint` **once**, stamping, so the `auto` rows pin to the fresh hashes.
-5. Commit the manifest with those pins.
+1. Refresh/stage the affected frames through the native Design MCP, including
+   **every actual same-folder `_*.jsx` helper**, then run `pull` to validate the
+   staged bytes. CLI `pull` performs no download.
+2. Preserve curated manifest rows. Add only reviewed new rows; `--write-manifest`
+   regenerates the whole manifest, so never use it as a routine incremental update.
+   If derivation is needed, run it against an isolated scratch CONFIG/manifest and
+   take only the reviewed additions. `--out` does not redirect that manifest write.
+3. `render` **every affected state** — a shared helper changes the content hash for
+   every frame in its folder, even when an HTML file does not explicitly import it.
+   Repopulate the agreed output directory from the exact refreshed sources.
+4. `lint --no-stamp` — the integrity check without manifest writes. **This is the commit gate.**
+5. `lint` **once**, stamping, so reviewed `auto` rows pin to the fresh hashes.
+6. Commit the manifest with those pins and preserve prior curated row identities.
 
 **`--no-stamp` is the safe default in CI and any automation.** A stamping lint *writes*
 the join manifest, so an unattended run can produce (or dirty) pins nobody reviewed —
@@ -85,6 +121,12 @@ and on a partial or stale render cache those pins are wrong rather than merely m
 Gate merges on `lint --no-stamp` (add `--fail-on-backfill` where the backfill gate
 applies) and keep stamping a deliberate, local step performed after a full pull +
 render.
+
+Recipe evidence does not broaden content hashing: it still covers the frame plus
+all same-folder `_*.jsx` siblings, not cross-folder dependencies. The runtime pin
+`dsRuntimeHash` covers `_ds_bundle.js` alone; it does not prove arbitrary runtime
+parts, CSS, fonts or uploaded bytes unchanged. Preserve the consuming project's
+runtime-file validation and served-byte checks when refreshing those inputs.
 
 ## Wanted in the CLI — NOT IMPLEMENTED (recorded 2026-08-26)
 

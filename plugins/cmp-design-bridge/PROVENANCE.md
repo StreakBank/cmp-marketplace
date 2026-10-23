@@ -1,35 +1,47 @@
 # CLI provenance and release check
 
-This plugin contains authored skill wrappers, not a vendored CLI. The binary is
-installed separately from the published npm package; skills do not update it.
+This plugin contains skill wrappers. The standalone CLI is a separate npm
+package; invoking a skill does not update that package.
 
 - CLI source: https://github.com/StreakBank/cmp-design-bridge
-- Tested source commit: `b25ead16ee3f453685be2113449fd4000e2cb64d`.
-- CLI release: **0.2.1**; wrapper **0.3.3**, marketplace **2.17.3**.
+- Tested source commit: `56c0a016bb8fd6045cdac1359d4b2620443853bf`.
+- CLI release: **0.3.0**; wrapper **0.3.4**, marketplace **2.17.4**.
 - CLI entry-point SHA-256: `d85b590fdfaf59a82c0df6d8c51ac4b2dc256c6d0a1056a0bc02d37f222450ef`.
-- Argument-test SHA-256: `05b7144ec8bf9c07b918e5a662a22313c374548d3228b8a93687a4d64907b6ba`.
-- Prepared npm tarball SHA-256: `a2d2dbd326ffc3829e9c0ca395d2c0b4d589eeb32fa0b1ee459846a9cce2d400`.
-- Prepared npm integrity: `sha512-dtVfA9ttITJxFxKJhBni2M4TVbXJxvBm0ufA4TdPsdwiIUS5FPGTKg7f+vhFzjrST2QNlFqWHBeLwZgXQki7Jw==`.
-- Validation 2026-10-22: all 47 CLI argument and existing smoke tests passed,
-  zero skipped/cancelled; Playwright/core 1.58.2. All 18 packaged files match
-  the tested source bytes. Real consuming CONFIG `lint --no-stamp` passed
-  without changing any CONFIG files. This is structural evidence only;
-  no fresh canvas synchronization or render-fidelity claim is made.
-- Scope: per-command argument validation before CONFIG/dispatch, safe root and
-  command help, and regression coverage. Command implementations, dependencies,
-  and default stamping are unchanged. README documents local-render freshness.
+- Recipe implementation SHA-256: `c56d2d158276c337542bce8e9101c1b7e3b13cacc2a27d914f077317e659dad9`.
+- Prepared npm tarball SHA-256: `3fa2e9528e5c697f2a39a8c7991c8a822f49f785c5b34e795cc6a33ecacc26c1`.
+- Prepared npm integrity: `sha512-9Qx8iguDIdk2UbuhjclETlEI5Z+w6EZSuO8OeYKA87zcneFZGCac4t2QndDhNG0cJCU1jae/pO4agdL3nxCFBg==`.
+- Validation 2026-10-23: **59 tests passed, zero skipped/cancelled**, including
+  actual Chromium render, imported intake, recipe-drift verification and fractional
+  geometry cases. Playwright/core remain 1.58.2; dependency versions are unchanged.
+  All **19 packaged files** match the tested source bytes. Independent review passed.
+- The upstream CLI repository had no configured Actions workflows at release
+  preparation. The local test run is the executed evidence; no CI pass is claimed.
 
-Registry release and CLI consumer adoption verified 2026-10-23: npm version
-`0.2.1` reports the exact integrity above. The global published-package install
-in the global npm package directory, reached by the installed CLI entry point,
-matches all 18 reviewed packaged files.
-Root help succeeds; unknown commands and flags fail with exit 2 before config
-loading. The installed consumer passes `lint --no-stamp` against a real consuming
-configuration without changing its metadata. This is structural validation,
-not a new render or canvas synchronization claim.
+The regression evidence preserves the predecessor's fractional intake viewport
+failure and the first correction's fractional montage viewport failure. The final
+implementation normalizes imported physical pixels consistently and rounds only
+browser viewport bounds for the montage. Fractional CSS dimensions and display
+scales remain valid inputs.
 
-The release was installed from npm at the exact version, with lifecycle scripts
-disabled. The release record retains registry integrity, the 18-file byte
-comparison, command checks and the no-stamp lint report.
+## Consumer migration
 
-Revalidate on the next CLI pin bump or a change to its argument/command contract.
+Version 0.3.0 adds exact enrolled-state recipe overrides and requires matching
+portable recipe evidence on existing rendered/intake artifacts. Pre-0.3.0 renders
+must be refreshed; imported references require fresh intake. Preserve curated
+manifest rows, refresh authoritative frames and all same-folder helper inputs,
+render every affected state, and gate on `lint --no-stamp` before deliberate
+stamping. A state with no render still has no visual evidence; lint does not
+establish canvas synchronization or visual fidelity.
+
+## Publication and adoption evidence
+
+At package preparation, the tarball above was tested locally and the source was
+published to its task branch. Registry publication and global consumer adoption
+are separate delivery steps, not established by the package or test receipts.
+Before adopting this wrapper, verify that npm's exact 0.3.0 integrity matches the
+value above, install the published package with lifecycle scripts disabled, and
+compare its 19 packaged file hashes to the reviewed source. Record the installed
+package path/version and a real consuming configuration's fresh render and
+`lint --no-stamp` results in the release record.
+
+Revalidate these bindings on the next CLI pin bump or command-contract change.

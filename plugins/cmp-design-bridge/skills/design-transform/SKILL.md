@@ -19,20 +19,29 @@ deterministic generator produces a bad transpiler. So the CLI prepares the
 inputs (the rendered frame, the source JSX, the conventions, the token maps) and
 YOU author the Compose.
 
-**CLI:** the skill calls the standalone `cmp-design-bridge` command (install:
-`npm i -g cmp-design-bridge@0.2.1`).
+**CLI:** requires the separately installed `cmp-design-bridge` 0.3.0 command
+(`npm i -g cmp-design-bridge@0.3.0`). Installing this wrapper does not install the
+CLI; arrange an update outside this skill if the installed version is older.
 
 ## Steps
 
-1. **Ensure the frame is pulled + rendered** (so you can see the target):
+1. **Refresh/stage and render the frame** (so you can see the target). Use
+   `/design-pull` to refresh the module through MCP, including every actual
+   same-folder `_*.jsx` helper; CLI `pull` only validates staged bytes. Then:
    ```
    cmp-design-bridge render <stateId> --config <repo>/.design-bridge
    ```
-   `Read` the rendered `<cache>/out/<stateId>.design.png`.
+   `Read` the rendered `<cache>/out/<stateId>.design.png` and pull manifest.
+   Canonical CONFIG resolves exact enrolled `stateOverrides`; omitted viewport,
+   crop or settle values inherit, and null crop means intrinsic height. Keep the
+   authored geometry rather than resizing it to satisfy the default width.
+   Require current `effectiveRecipe`/`recipeHash` evidence; predecessor manifests
+   must be refreshed. If a helper changed, render every frame in that folder
+   before any stamping lint. Use `lint --no-stamp` as the manifest-preserving gate.
 
-2. **Read the design source + the conventions.** The frame's `_<module>-screen.jsx`
-   (the structural source) + `_<module>-data.jsx` (the fixture) under
-   `<cache>/canvas/<module>/`, and `<repo>/.design-bridge/conventions.md`
+2. **Read the design source + the conventions.** The frame and its actual
+   same-folder `_*.jsx` helpers under the configured frames root, including
+   structural and fixture builders, and `<repo>/.design-bridge/conventions.md`
    (token map, the cited declarative-stack rules, the component seam).
 
 3. **Author the Compose under the declarative-stack rules** (cited in
