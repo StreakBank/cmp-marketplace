@@ -19,8 +19,8 @@ pixels are the screen vs foreign status-bar/OS chrome) and the
 **theme-translation** (is this a cross-theme input — e.g. a light design for a
 dark-only estate?). Everything deterministic lives in the CLI.
 
-**CLI:** requires a separately installed `cmp-design-bridge` 0.3.0 command
-(`npm i -g cmp-design-bridge@0.3.0`); the wrapper does not install or upgrade it.
+**CLI:** requires a separately installed `cmp-design-bridge` 0.3.1 command
+(`npm i -g cmp-design-bridge@0.3.1`); the wrapper does not install or upgrade it.
 Arrange any CLI update outside this skill. Optional: `npm i tesseract.js` in the
 consuming repo enables the OCR evidence sidecar.
 

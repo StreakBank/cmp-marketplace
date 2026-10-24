@@ -16,8 +16,8 @@ montage, run the mechanical gates) is the `cmp-design-bridge verify` CLI. The
 GRADE itself — "do these two engine-different renders depict the same screen at
 acceptable fidelity?" — is the irreducibly model-driven leg, and YOU do it.
 
-**CLI:** requires the separately installed `cmp-design-bridge` 0.3.0 command
-(`npm i -g cmp-design-bridge@0.3.0`). The wrapper does not upgrade the CLI;
+**CLI:** requires the separately installed `cmp-design-bridge` 0.3.1 command
+(`npm i -g cmp-design-bridge@0.3.1`). The wrapper does not upgrade the CLI;
 arrange that outside this skill before consuming the new evidence contract.
 
 ## Steps

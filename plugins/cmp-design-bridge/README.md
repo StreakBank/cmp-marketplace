@@ -11,10 +11,10 @@ the two model-driven legs:
 
 ## Prerequisite
 
-These skills require the separately installed standalone CLI 0.3.0:
+These skills require the separately installed standalone CLI 0.3.1:
 
 ```bash
-npm i -g cmp-design-bridge@0.3.0
+npm i -g cmp-design-bridge@0.3.1
 ```
 
 Installing this wrapper does not install or upgrade the CLI. Update the npm package
@@ -26,7 +26,7 @@ sequence those operations and the two model-driven legs.
 
 ## Safe CLI help and argument handling
 
-This wrapper targets CLI **0.3.0**; update the separate npm package deliberately,
+This wrapper targets CLI **0.3.1**; update the separate npm package deliberately,
 never through a skill invocation. See [PROVENANCE.md](PROVENANCE.md) for the release
 binding and verification status. The CLI rejects unknown/cross-command flags,
 missing or malformed values, duplicate/conflicting flags, and extra positionals

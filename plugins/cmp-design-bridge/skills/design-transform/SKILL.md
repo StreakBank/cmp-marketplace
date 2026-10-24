@@ -19,8 +19,8 @@ deterministic generator produces a bad transpiler. So the CLI prepares the
 inputs (the rendered frame, the source JSX, the conventions, the token maps) and
 YOU author the Compose.
 
-**CLI:** requires the separately installed `cmp-design-bridge` 0.3.0 command
-(`npm i -g cmp-design-bridge@0.3.0`). Installing this wrapper does not install the
+**CLI:** requires the separately installed `cmp-design-bridge` 0.3.1 command
+(`npm i -g cmp-design-bridge@0.3.1`). Installing this wrapper does not install the
 CLI; arrange an update outside this skill if the installed version is older.
 
 ## Steps

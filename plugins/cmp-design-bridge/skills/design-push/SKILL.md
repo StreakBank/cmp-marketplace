@@ -38,6 +38,15 @@ and explicitly NOT part of the reusable verify framework.
    `/design-fidelity`.
 
 ## Notes
+- **Preserve upload bytes.** The native inline `write_files` channel has been
+  observed to decode literal `\uXXXX` sequences into Unicode characters. Scan all
+  text files for those sequences before inline writes. Where the current tool
+  supports base64, generate it directly from the local file bytes; never reproduce
+  an encoded file through model output. If no lossless transport is available,
+  stop that upload and retain the local source. A successful `written` count or
+  preview does not prove byte identity: fetch the served file and compare its
+  SHA-256 with the local source before treating a runtime/hash-pinned file as
+  synchronized. Stop on a mismatch; do not repin to the transformed bytes.
 - The DS-component port (Half 1) goes to the design-SYSTEM project via the native
   `DesignSync` tool, not here. This skill is for screen frames in a canvas
   project.

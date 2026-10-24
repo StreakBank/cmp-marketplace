@@ -18,8 +18,8 @@ validation (truncation check, runtime revision-pin and inventory checks) is the
 download anything from the canvas.
 
 **CLI:** the skill calls the standalone `cmp-design-bridge` command (the logic
-lives in the CLI, not here). Requires a separately installed CLI 0.3.0:
-`npm i -g cmp-design-bridge@0.3.0`. Do not install or upgrade it as part of this skill.
+lives in the CLI, not here). Requires a separately installed CLI 0.3.1:
+`npm i -g cmp-design-bridge@0.3.1`. Do not install or upgrade it as part of this skill.
 
 ## Steps
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.17.5 — 2026-10-23
+
+### Updated — `cmp-design-bridge` 0.3.5: upload-byte and CLI lookup learnings
+
+- Document the observed inline `write_files` conversion of literal Unicode
+  escapes, file-generated lossless encoding and mandatory served-SHA comparison
+  before declaring hash-pinned content synchronized. Stop on a mismatch.
+- Pin the separately installed CLI 0.3.1, whose README explains existing frame
+  lookup precedence and prefix-filtered lint coverage limits.
+- Documentation and release metadata only. No new command, tool permission,
+  transport capability or runtime behavior is introduced; historical migration
+  boundaries remain unchanged.
+
+Plugin versions: `cmp-design-bridge` 0.3.4 → 0.3.5. Marketplace 2.17.4 → 2.17.5.
+
 ## 2.17.4 — 2026-10-23
 
 ### Updated — `cmp-design-bridge` 0.3.4: CLI 0.3.0 recipe evidence
